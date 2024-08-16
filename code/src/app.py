@@ -13,7 +13,6 @@ CORS(app)
 https_bp = Blueprint('https', __name__)
 http_bp = Blueprint('http', __name__)
 
-
 # 直接读取配置文件
 with open('./config/yoloconfig.yaml', 'r') as file:
     config = yaml.safe_load(file)
@@ -27,11 +26,8 @@ segmentation_model = SegmentationModel(model_name)
 # strategy = SelectionStrategy()
 
 
-
 @app.route('/process_image', methods=['POST'])
 def process_image():
-
-    config = get_config('path-to_config')
 
     segmentation_model = SegmentationModel(config)
     depth_model = DepthModel(config)
@@ -43,14 +39,10 @@ def process_image():
     depth_results = depth_model.predict(image)
 
     strategy = SelectionStrategy(image, segmentation_results, depth_results)
+    
     image_grab_point, label = strategy.select()
-
     return jsonify({'point': image_grab_point.tolist(), 'label': label})
 
-
-
-def get_config(path):
-    pass
 
 def get_image(data):
     # 将文件数据读取到一个字节流中
