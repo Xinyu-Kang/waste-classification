@@ -1,0 +1,13 @@
+prefix=/Users/xinyukang/Desktop/Dev/ZZDance2.0/conda
+exec_prefix=/Users/xinyukang/Desktop/Dev/ZZDance2.0/conda
+libdir=/Users/xinyukang/Desktop/Dev/ZZDance2.0/conda/lib
+sharedlibdir=/Users/xinyukang/Desktop/Dev/ZZDance2.0/conda/lib
+includedir=/Users/xinyukang/Desktop/Dev/ZZDance2.0/conda/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
