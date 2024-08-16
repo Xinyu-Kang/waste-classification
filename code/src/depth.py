@@ -1,9 +1,32 @@
+import numpy as np
+import torch
+from depth_anything_v2.dpt import DepthAnythingV2
+
 class DepthModel():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, config) -> None:
+        self.config = config
+        self.model = None
+        self.load()
 
-    def load():
-        pass
+    def load(self):
+        self.load_depth_anything_v2()
 
-    def predict():
-        pass
+    def load_depth_anything_v2(self):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        encoder = 'vits'
+        model_configs = {
+            'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},
+            'vitb': {'encoder': 'vitb', 'features': 128, 'out_channels': [96, 192, 384, 768]},
+            'vitl': {'encoder': 'vitl', 'features': 256, 'out_channels': [256, 512, 1024, 1024]},
+            'vitg': {'encoder': 'vitg', 'features': 384, 'out_channels': [1536, 1536, 1536, 1536]}
+        }
+        depth_anything_model = DepthAnythingV2(**model_configs[encoder])
+        depth_anything_model.load_state_dict(torch.load(f'../checkpoints/depth_anything_v2_{encoder}.pth', map_location=device))
+        depth_anything_model = depth_anything_model.to(device).eval()
+        self.model = depth_anything_model
+
+    def predict(self, image):
+        depth_map = self.model.infer_image(image, input_size=518)
+        depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min()) * 255.0
+        depth_map = depth_map.astype(np.uint8)
+        return depth_map

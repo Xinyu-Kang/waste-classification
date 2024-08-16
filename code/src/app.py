@@ -29,16 +29,19 @@ segmentation_model = SegmentationModel(model_name)
 @app.route('/process_image', methods=['POST'])
 def process_image():
 
+    segmentation_model = SegmentationModel(config)
+    depth_model = DepthModel(config)
+
     image = get_image(request.files['image'])
 
     segmentation_results = segmentation_model.predict(image)
 
-    # depth_results = depth_model.predict(image, segmentation_results)
+    depth_results = depth_model.predict(image)
 
-    # image_point, label = strategy.select(segmentation_results, depth_results)
-
+    strategy = SelectionStrategy(image, segmentation_results, depth_results)
     
-    return jsonify({'grab_point': 1, 'label': "haha"})
+    image_grab_point, label = strategy.select()
+    return jsonify({'point': image_grab_point.tolist(), 'label': label})
 
 
 def get_image(data):
@@ -49,7 +52,6 @@ def get_image(data):
     image = cv2.imdecode(image_np, cv2.IMREAD_UNCHANGED)
     
     return image
-
 
 
 
