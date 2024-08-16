@@ -31,11 +31,7 @@ def process_image():
 
     image = get_image(request.files['image'])
 
-    
-
     segmentation_results = segmentation_model.predict(image)
-
-    
 
     # depth_results = depth_model.predict(image, segmentation_results)
 
