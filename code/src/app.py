@@ -26,16 +26,20 @@ def process_image():
 
     depth_results = depth_model.predict(image, segmentation_results)
 
-    image_point, label = strategy.select(segmentation_results, depth_results)
+    image_grab_point, label = strategy.select(segmentation_results, depth_results)
 
     
-    return jsonify({'grab_point': image_point.tolist(), 'label': label})
+    return jsonify({'grab_point': image_grab_point.tolist(), 'label': label})
 
 
 def get_image(data):
     image_np = np.fromstring(data.read())
     image = cv2.imdecode(image_np, np.uint8, cv2.IMREAD_UNCHANGED)
     return image
+
+
+def save_image(image, path):
+    pass
 
 
 if __name__ == '__main__':
