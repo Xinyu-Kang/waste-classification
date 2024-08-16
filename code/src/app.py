@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, Blueprint
 from flask_cors import CORS
 import cv2
 import numpy as np
+import yaml
 
 from segmentation import SegmentationModel 
 from depth import DepthModel 
@@ -12,11 +13,21 @@ CORS(app)
 https_bp = Blueprint('https', __name__)
 http_bp = Blueprint('http', __name__)
 
+# 直接读取配置文件
+with open('./config/yoloconfig.yaml', 'r') as file:
+    config = yaml.safe_load(file)
+
+# 根据配置文件选择模型
+model_name = config['model']['selected']
+segmentation_model = SegmentationModel(model_name)
+
+
+# depth_model = DepthModel('depth-anything')
+# strategy = SelectionStrategy()
+
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
-
-    config = get_config('path-to_config')
 
     segmentation_model = SegmentationModel(config)
     depth_model = DepthModel(config)
@@ -28,22 +39,20 @@ def process_image():
     depth_results = depth_model.predict(image)
 
     strategy = SelectionStrategy(image, segmentation_results, depth_results)
+    
     image_grab_point, label = strategy.select()
-
     return jsonify({'point': image_grab_point.tolist(), 'label': label})
 
 
-def get_config(path):
-    pass
-
 def get_image(data):
-    image_np = np.fromstring(data.read())
-    image = cv2.imdecode(image_np, np.uint8, cv2.IMREAD_UNCHANGED)
+    # 将文件数据读取到一个字节流中
+    image_np = np.frombuffer(data.read(), np.uint8)
+    
+    # 解码图像
+    image = cv2.imdecode(image_np, cv2.IMREAD_UNCHANGED)
+    
     return image
 
-
-def save_image(image, path):
-    pass
 
 
 if __name__ == '__main__':
