@@ -5,8 +5,8 @@ class SegmentationModel:
         self.model = None
         self.load()
 
-    def load():
+    def load(self):
         pass
 
-    def predict():
+    def predict(self, image):
         pass
