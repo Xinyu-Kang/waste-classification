@@ -12,6 +12,7 @@ class SegmentationModel:
         self.load()
 
     def load(self):
+
         """
         根据模型名称加载模型。
         """
