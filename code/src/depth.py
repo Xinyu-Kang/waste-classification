@@ -9,7 +9,7 @@ class DepthModel():
         self.load()
 
     def load(self):
-        self.model = self.load_depth_anything_v2()
+        self.load_depth_anything_v2()
 
     def load_depth_anything_v2(self):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -23,9 +23,10 @@ class DepthModel():
         depth_anything_model = DepthAnythingV2(**model_configs[encoder])
         depth_anything_model.load_state_dict(torch.load(f'../checkpoints/depth_anything_v2_{encoder}.pth', map_location=device))
         depth_anything_model = depth_anything_model.to(device).eval()
+        self.model = depth_anything_model
 
     def predict(self, image):
         depth_map = self.model.infer_image(image, input_size=518)
         depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min()) * 255.0
         depth_map = depth_map.astype(np.uint8)
-        
+        return depth_map
