@@ -25,7 +25,7 @@ def process_image():
 
     segmentation_results = segmentation_model.predict(image)
 
-    depth_results = depth_model.predict(image, segmentation_results)
+    depth_results = depth_model.predict(image)
 
     strategy = SelectionStrategy(image, segmentation_results, depth_results)
     image_grab_point, label = strategy.select()
