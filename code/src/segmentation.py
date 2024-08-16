@@ -16,7 +16,7 @@ class SegmentationModel:
         根据模型名称加载模型。
         """
         # 假设模型文件存放在 './checkpoints/segmentation/' 目录下
-        model_path = f'./checkpoints/segmentation/{self.model_name}.pt'
+        model_path = f'../checkpoints/segmentation/{self.model_name}.pt'
         if os.path.exists(model_path):
             self.model = YOLO(model_path).to('cuda' if torch.cuda.is_available() else 'cpu')
         else:
