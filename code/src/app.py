@@ -12,15 +12,15 @@ CORS(app)
 https_bp = Blueprint('https', __name__)
 http_bp = Blueprint('http', __name__)
 
-segmentation_model = SegmentationModel("yolo")
-depth_model = DepthModel("depth-anything")
+segmentation_model = SegmentationModel('yolo')
+depth_model = DepthModel('depth-anything')
 strategy = SelectionStrategy()
 
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
 
-    image = get_image(request.data)
+    image = get_image(request.files['image'])
 
     segmentation_results = segmentation_model.predict(image)
 
@@ -29,13 +29,16 @@ def process_image():
     image_point, label = strategy.select(segmentation_results, depth_results)
 
     
-    return jsonify({"grab_point": image_point.tolist(), "label": label})
+    return jsonify({'grab_point': image_point.tolist(), 'label': label})
 
 
 def get_image(data):
-    pass
+    image_np = np.fromstring(data.read())
+    image = cv2.imdecode(image_np, np.uint8, cv2.IMREAD_UNCHANGED)
+    return image
+
 
 if __name__ == '__main__':
     app.register_blueprint(http_bp)
     app.register_blueprint(https_bp)
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host='0.0.0.0', port=5001)
