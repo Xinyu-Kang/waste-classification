@@ -15,6 +15,7 @@ dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_kmp_llvm
   - _sysroot_linux-64_curr_repodata_hack=3=haa98f57_10
+  - aiofiles=22.1.0=py39h06a4308_0
   - alsa-lib=1.2.12=h4ab18f5_0
   - aom=3.9.1=hac33072_0
   - attr=2.5.1=h166bdaf_1
