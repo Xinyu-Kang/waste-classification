@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 import yaml
-from matplotlib.pyplot import imshow
-from PIL import Image
 
 from segmentation import SegmentationModel 
 from depth import DepthModel 
@@ -27,8 +25,16 @@ if __name__ == '__main__':
     print("语义分割...")
     segmentation_results = segmentation_model.predict(image)
     label_names = segmentation_model.get_label_names()
+    print(segmentation_results)
 
     print("深度预测...")
     depth_map = depth_model.predict(image)
     depth_array = np.asarray(depth_map)
-    imshow(depth_array)
+    cv2.imwrite("../../small_test_data/depth_1.jpg", depth_map)
+
+    print("选择物体...")
+    strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
+    object = strategy.select()
+    print(object)
+
+    print("完成")

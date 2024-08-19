@@ -6,18 +6,24 @@ class SelectionStrategy:
     def __init__(self, image, segmentation_results, depth_map, label_names) -> None:
         self.image = image
         self.segmentation_results = segmentation_results
-        self.depth_results = depth_map
+        self.depth_map = depth_map
         self.label_names = label_names
-        self.threshold = 0.95
+        self.depth_threshold = 0
+        self.area_threshold = 0
         self.candidates = None
 
     def select(self):
         self.calculate_depth_score()
         self.calculate_boarder_distance()
         self.calculate_area()
-        image_grab_point = None
-        label = None
-        return image_grab_point, label
+        best_candidate = None
+        best_depth_score = -1
+        for c in self.candidates:
+            if c["depth-score"] > best_depth_score:
+                best_depth_score = c["depth-score"]
+                best_candidate = c
+
+        return best_candidate
 
     def calculate_depth_score(self):
         filtered_shapes = []
@@ -37,13 +43,14 @@ class SelectionStrategy:
 
                 # 计算深度得分
                 score = calculate_score(self.depth_map, boundary_points)
-                if score > self.threshold:
+                if score > self.depth_threshold:
                     filtered_shapes.append({
                         "label": label,
                         "points": boundary_points.tolist(),
                         "depth-score": score
                     })
         self.candidates = filtered_shapes
+        print("Candidates: ", self.candidates)
 
     def calculate_boarder_distance(self):
         for i in range(len(self.candidates)):
@@ -102,7 +109,6 @@ def dilate_boundary(depth_map, boundary_points):
     return inside_dilation, outside_dilation
 
 def compare_inside_outside(depth_map, point, inside_dilation, outside_dilation):
-    print(f"Processing point: {point}")
     box_mask = create_box(depth_map, point, (20, 20))
     box_inside_mask = cv2.bitwise_and(inside_dilation, box_mask)
     box_outside_mask = cv2.bitwise_and(outside_dilation, box_mask)
