@@ -60,6 +60,7 @@ class SelectionStrategy:
         if self.candidates is None:
             raise ValueError("No candidates found. Please run the selection process first.")
 
+        filtered_candidates = []
         for candidate in self.candidates:
             # 获取候选区域的边界点
             boundary_points = np.array(candidate['points'], dtype=np.int32)
@@ -67,8 +68,13 @@ class SelectionStrategy:
             # 计算面积
             area = cv2.contourArea(boundary_points)
             
-            # 将面积添加到候选字典中
-            candidate['area'] = area
+            # 只保留面积大于阈值的物体
+            if area > self.area_threshold:
+                candidate['area'] = area
+                filtered_candidates.append(candidate)
+
+        # 更新 self.candidates，只保留符合面积条件的对象
+        self.candidates = filtered_candidates
 
 def calculate_score(depth_map, boundary_points):
     inside_dilation, outside_dilation = dilate_boundary(depth_map, boundary_points)
