@@ -10,7 +10,7 @@ class SegmentationModel:
         self.model_name = model_name
         self.model = None
         self.load()
-
+    
     def load(self):
         """
         根据模型名称加载模型。
