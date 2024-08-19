@@ -42,6 +42,7 @@ def process_image():
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     
     image_grab_point, label = strategy.select()
+    print(f" point {image_grab_point}, label : {label}")
     return jsonify({'point': image_grab_point.tolist(), 'label': label})
 
 
