@@ -55,7 +55,7 @@ class SelectionStrategy:
         boundary_points = np.array(points, dtype=np.int32)
         
         # 创建一个二值掩码图像
-        mask = np.zeros(self.depth_results.shape[:2], dtype=np.uint8)
+        mask = np.zeros(self.depth_map.shape[:2], dtype=np.uint8)
         cv2.fillPoly(mask, [boundary_points], color=255)
         
         # 计算距离变换

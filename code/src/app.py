@@ -67,7 +67,7 @@ def process_image():
     image, filename = get_image(request.files['image'])
 
     # 异步上传图像到FTP服务器
-    asyncio.create_task(upload_to_ftp(filename, filename))
+    # asyncio.create_task(upload_to_ftp(filename, filename))
 
     segmentation_results = segmentation_model.predict(image)
     label_names = segmentation_model.get_label_names()
@@ -79,7 +79,7 @@ def process_image():
     image_grab_point, label, points = strategy.select()
     print(f" point {image_grab_point}, label : {label}, object_img_pints: {points}")
 
-    return jsonify({'point': image_grab_point.tolist(), 'label': label, 'object_img_pints': points})
+    return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})
 
 
 
