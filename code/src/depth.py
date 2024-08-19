@@ -12,6 +12,9 @@ class DepthModel():
         self.load_depth_anything_v2()
 
     def load_depth_anything_v2(self):
+        """
+        根据encoder加载DepthAnythingV2模型
+        """
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         model_configs = {
             'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},
@@ -25,6 +28,11 @@ class DepthModel():
         self.model = depth_anything_model
 
     def predict(self, image):
+        """
+        计算输入图像的深度图
+        :param image: 输入图像
+        :return: 深度图
+        """
         depth_map = self.model.infer_image(image, input_size=518)
         depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min()) * 255.0
         depth_map = depth_map.astype(np.uint8)
