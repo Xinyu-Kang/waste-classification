@@ -56,7 +56,19 @@ class SelectionStrategy:
             self.candidates[i]['min-distance'] = min_distance
 
     def calculate_area(self):
-        pass
+
+        if self.candidates is None:
+            raise ValueError("No candidates found. Please run the selection process first.")
+
+        for candidate in self.candidates:
+            # 获取候选区域的边界点
+            boundary_points = np.array(candidate['points'], dtype=np.int32)
+            
+            # 计算面积
+            area = cv2.contourArea(boundary_points)
+            
+            # 将面积添加到候选字典中
+            candidate['area'] = area
 
 def calculate_score(depth_map, boundary_points):
     inside_dilation, outside_dilation = dilate_boundary(depth_map, boundary_points)
