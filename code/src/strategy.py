@@ -50,7 +50,6 @@ class SelectionStrategy:
                         "depth-score": score
                     })
         self.candidates = filtered_shapes
-        print("Candidates: ", self.candidates)
 
     def calculate_boarder_distance(self):
         for i in range(len(self.candidates)):

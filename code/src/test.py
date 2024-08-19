@@ -1,3 +1,5 @@
+from flask import Flask, request, jsonify, Blueprint
+from flask_cors import CORS
 import cv2
 import numpy as np
 import yaml
@@ -6,7 +8,13 @@ from segmentation import SegmentationModel
 from depth import DepthModel 
 from strategy import SelectionStrategy
 
+app = Flask(__name__) 
+CORS(app)
+https_bp = Blueprint('https', __name__)
+http_bp = Blueprint('http', __name__)
+
 if __name__ == '__main__':
+
     print("读取配置文件...")
     with open('./config/yoloconfig.yaml', 'r') as file:
         config_seg = yaml.safe_load(file)
@@ -35,6 +43,11 @@ if __name__ == '__main__':
     print("选择物体...")
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     object = strategy.select()
-    print(object)
-
+    # print(object)
+    image_grab_point = object["points"][0]
+    label = object["label"]
+    with app.app_context():
+        result = jsonify({'point': image_grab_point, 'label': label})
+        print("\n")
+        print(result.data)
     print("完成")
