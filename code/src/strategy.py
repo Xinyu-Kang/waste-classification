@@ -18,12 +18,51 @@ class SelectionStrategy:
         self.calculate_area()
         best_candidate = None
         best_depth_score = -1
-        for c in self.candidates:
-            if c["depth-score"] > best_depth_score:
-                best_depth_score = c["depth-score"]
-                best_candidate = c
 
-        return best_candidate
+        # 设置面积的最小阈值
+        area_threshold = 0  # 你可以根据实际情况调整这个值
+        
+        # 过滤出面积大于阈值的候选区域
+        valid_candidates = [
+            candidate for candidate in self.candidates if candidate['area'] > area_threshold
+        ]
+        
+        if not valid_candidates:
+            return None, None
+        
+        # 找出深度分数最大的候选区域
+        max_depth_score = max(candidate['depth-score'] for candidate in valid_candidates)
+        max_depth_candidates = [
+            candidate for candidate in valid_candidates if candidate['depth-score'] == max_depth_score
+        ]
+
+        # 如果有多个深度分数相同的候选区域，则选择 x 坐标最大的那个
+        if len(max_depth_candidates) > 1:
+            max_depth_candidates.sort(key=lambda x: max(np.array(x['points'])[:, 0]), reverse=True)
+
+        best_candidate = max_depth_candidates[0]
+
+        # 计算抓取点
+        grasp_point = self.calculate_grasp_point(best_candidate['points'])
+
+        # 返回选定区域的抓取点、标签及所有points
+        label = best_candidate['label']
+
+        return grasp_point, label, best_candidate['points']
+    
+    def calculate_grasp_point(self, points):
+        # 将points转换为NumPy数组
+        boundary_points = np.array(points, dtype=np.int32)
+        
+        # 创建一个二值掩码图像
+        mask = np.zeros(self.depth_results.shape[:2], dtype=np.uint8)
+        cv2.fillPoly(mask, [boundary_points], color=255)
+        
+        # 计算距离变换
+        dist_transform = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
+        _, _, _, max_loc = cv2.minMaxLoc(dist_transform)
+        
+        return max_loc
 
     def calculate_depth_score(self):
         filtered_shapes = []
@@ -108,6 +147,7 @@ def dilate_boundary(depth_map, boundary_points):
     return inside_dilation, outside_dilation
 
 def compare_inside_outside(depth_map, point, inside_dilation, outside_dilation):
+    print(f"Processing point: {point}")
     box_mask = create_box(depth_map, point, (20, 20))
     box_inside_mask = cv2.bitwise_and(inside_dilation, box_mask)
     box_outside_mask = cv2.bitwise_and(outside_dilation, box_mask)

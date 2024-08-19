@@ -34,7 +34,7 @@ if __name__ == '__main__':
     segmentation_results = segmentation_model.predict(image)
     label_names = segmentation_model.get_label_names()
     print(segmentation_results)
-
+    
     print("深度预测...")
     depth_map = depth_model.predict(image)
     depth_array = np.asarray(depth_map)
