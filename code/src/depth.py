@@ -3,8 +3,8 @@ import torch
 from depth_anything_v2.dpt import DepthAnythingV2
 
 class DepthModel():
-    def __init__(self, config) -> None:
-        self.config = config
+    def __init__(self, model_name) -> None:
+        self.encoder = model_name
         self.model = None
         self.load()
 
@@ -13,15 +13,14 @@ class DepthModel():
 
     def load_depth_anything_v2(self):
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        encoder = 'vits'
         model_configs = {
             'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},
             'vitb': {'encoder': 'vitb', 'features': 128, 'out_channels': [96, 192, 384, 768]},
             'vitl': {'encoder': 'vitl', 'features': 256, 'out_channels': [256, 512, 1024, 1024]},
             'vitg': {'encoder': 'vitg', 'features': 384, 'out_channels': [1536, 1536, 1536, 1536]}
         }
-        depth_anything_model = DepthAnythingV2(**model_configs[encoder])
-        depth_anything_model.load_state_dict(torch.load(f'../checkpoints/depth_anything_v2_{encoder}.pth', map_location=device))
+        depth_anything_model = DepthAnythingV2(**model_configs[self.encoder])
+        depth_anything_model.load_state_dict(torch.load(f'../checkpoints/depth_anything_v2_{self.encoder}.pth', map_location=device))
         depth_anything_model = depth_anything_model.to(device).eval()
         self.model = depth_anything_model
 

@@ -15,30 +15,28 @@ http_bp = Blueprint('http', __name__)
 
 # 直接读取配置文件
 with open('./config/yoloconfig.yaml', 'r') as file:
-    config = yaml.safe_load(file)
+    config_seg = yaml.safe_load(file)
+with open('./config/depthconfig.yaml', 'r') as file:
+    config_depth = yaml.safe_load(file)
 
 # 根据配置文件选择模型
-model_name = config['model']['selected']
-segmentation_model = SegmentationModel(model_name)
-
-
-# depth_model = DepthModel('depth-anything')
-# strategy = SelectionStrategy()
+seg_model_name = config_seg['model']['selected']
+segmentation_model = SegmentationModel(seg_model_name)
+depth_model_name = config_depth['model']['selected']
+depth_model = DepthModel(depth_model_name)
 
 
 @app.route('/process_image', methods=['POST'])
 def process_image():
 
-    segmentation_model = SegmentationModel(config)
-    depth_model = DepthModel(config)
-
     image = get_image(request.files['image'])
 
     segmentation_results = segmentation_model.predict(image)
+    label_names = segmentation_model.get_label_names()
 
-    depth_results = depth_model.predict(image)
+    depth_map = depth_model.predict(image)
 
-    strategy = SelectionStrategy(image, segmentation_results, depth_results)
+    strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     
     image_grab_point, label = strategy.select()
     return jsonify({'point': image_grab_point.tolist(), 'label': label})

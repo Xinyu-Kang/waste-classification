@@ -1,0 +1,4 @@
+model:
+  selected: vits  # 在这里选择要使用的模型
+  available:
+    - vits

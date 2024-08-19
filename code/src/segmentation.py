@@ -21,6 +21,10 @@ class SegmentationModel:
             self.model = YOLO(model_path).to('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             raise ValueError(f"Model file not found: {model_path}")
+        
+    def get_label_names(self):
+        model_names = self.model.names
+        return model_names
 
     def predict(self, image):
         """
