@@ -13,8 +13,7 @@ class SelectionStrategy:
 
     def select(self):
         self.calculate_depth_score()
-        self.sum_boarder_distance()
-        self.min_boarder_distance()
+        self.calculate_boarder_distance()
         self.calculate_area()
         image_grab_point = None
         label = None
@@ -46,27 +45,31 @@ class SelectionStrategy:
                     })
         self.candidates = filtered_shapes
 
-    def sum_boarder_distance(self):
-        pass
-
-    def min_boarder_distance(self):
-        pass
+    def calculate_boarder_distance(self):
+        for i in range(len(self.candidates)):
+            points = np.array(self.candidates[i]['points'])
+            top, left = np.min(points, axis=0)
+            bottom, right = np.max(points, axis=0)
+            total_distance = left + (640 - right) + top + (480 - bottom)
+            min_distance = min(left, 640 - right, top, 480 - bottom)
+            self.candidates[i]['total-distance'] = total_distance
+            self.candidates[i]['min-distance'] = min_distance
 
     def calculate_area(self):
         pass
 
-def calculate_score(image, boundary_points):
-    inside_dilation, outside_dilation = dilate_boundary(image, boundary_points)
+def calculate_score(depth_map, boundary_points):
+    inside_dilation, outside_dilation = dilate_boundary(depth_map, boundary_points)
     num_points = len(boundary_points)
     num_greater = sum(
-        compare_inside_outside(image, point, inside_dilation, outside_dilation)
+        compare_inside_outside(depth_map, point, inside_dilation, outside_dilation)
         for point in boundary_points
     )
     return num_greater / num_points
 
-def dilate_boundary(image, boundary_points):
+def dilate_boundary(depth_map, boundary_points):
     boundary_points = boundary_points.reshape((-1, 1, 2))
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    mask = np.zeros(depth_map.shape[:2], dtype=np.uint8)
     cv2.polylines(mask, [boundary_points], isClosed=True, color=1, thickness=1)
     
     inside_mask = np.zeros_like(mask)
@@ -80,14 +83,14 @@ def dilate_boundary(image, boundary_points):
 
     return inside_dilation, outside_dilation
 
-def compare_inside_outside(image, point, inside_dilation, outside_dilation):
+def compare_inside_outside(depth_map, point, inside_dilation, outside_dilation):
     print(f"Processing point: {point}")
-    box_mask = create_box(image, point, (20, 20))
+    box_mask = create_box(depth_map, point, (20, 20))
     box_inside_mask = cv2.bitwise_and(inside_dilation, box_mask)
     box_outside_mask = cv2.bitwise_and(outside_dilation, box_mask)
 
-    inside_values = image[box_inside_mask == 1]
-    outside_values = image[box_outside_mask == 1]
+    inside_values = depth_map[box_inside_mask == 1]
+    outside_values = depth_map[box_outside_mask == 1]
     inside_avg = np.mean(inside_values)
     outside_avg = np.mean(outside_values)
 
