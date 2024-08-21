@@ -38,6 +38,6 @@ class SegmentationModel:
         height, width = image.shape[:2]
 
         # 如果是 YOLO 模型，输入必须是一个格式化的图像
-        results = self.model(image,conf=0.1, imgsz=(height, width), agnostic_nms=True, save=True)  # YOLO 模型可以直接接受 NumPy 数组
+        results = self.model(image,conf=0.1, imgsz=(height, width), agnostic_nms=True)  # YOLO 模型可以直接接受 NumPy 数组
         
         return results
