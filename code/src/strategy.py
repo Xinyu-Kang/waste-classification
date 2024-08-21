@@ -15,20 +15,23 @@ class SelectionStrategy:
     def select(self):
         self.calculate_depth_score()
         self.calculate_boarder_distance()
-        self.calculate_area()
+        # self.calculate_area()
         best_candidate = None
         best_depth_score = -1
+        valid_candidates = self.candidates
+        
 
         # 设置面积的最小阈值
         area_threshold = 0  # 你可以根据实际情况调整这个值
         
         # 过滤出面积大于阈值的候选区域
-        valid_candidates = [
-            candidate for candidate in self.candidates if candidate['area'] > area_threshold
-        ]
+        # valid_candidates = [
+        #     candidate for candidate in self.candidates if candidate['area'] > area_threshold
+        # ]
         
         if not valid_candidates:
-            return None, None
+            print("no valied canditates")
+            return None, None, None
         
         # 找出深度分数最大的候选区域
         max_depth_score = max(candidate['depth-score'] for candidate in valid_candidates)
@@ -50,6 +53,8 @@ class SelectionStrategy:
 
         return grasp_point, label, best_candidate['points']
     
+
+
     def calculate_grasp_point(self, points):
         # 将points转换为NumPy数组
         boundary_points = np.array(points, dtype=np.int32)
@@ -68,27 +73,52 @@ class SelectionStrategy:
         filtered_shapes = []
         masks = self.segmentation_results[0].masks  # 获取分割结果
         class_ids = self.segmentation_results[0].boxes.cls  # 获取类别ID
-
+        
         if masks is not None:
-            for i, mask in enumerate(masks.data):  # 直接使用掩码数据
-                label = self.label_names[int(class_ids[i])]
+            for i, mask in enumerate(masks.xy):
+                label = self.label_names[int(class_ids[i])]  # 从模型中获取类别名称
+                points = np.array(mask, dtype=np.int32)  # 获取多边形的像素点坐标
 
-                # 将 Tensor 转换为 NumPy 数组并转换类型
-                mask = mask.cpu().numpy().astype(np.uint8)
+                # resampled_points = uniform_resample(points, 2)
                 
-                # 提取掩码的边界
-                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-                boundary_points = contours[0].reshape(-1, 2)  # 获取边界上的所有点
+                # resampled_points = np.array(resampled_points, dtype=np.int32)
 
                 # 计算深度得分
-                score = calculate_score(self.depth_map, boundary_points)
+                score = calculate_score(self.depth_map, points)
                 if score > self.depth_threshold:
                     filtered_shapes.append({
                         "label": label,
-                        "points": boundary_points.tolist(),
+                        "points": points.tolist(),
                         "depth-score": score
                     })
+
         self.candidates = filtered_shapes
+
+    # def calculate_depth_score(self):
+    #     filtered_shapes = []
+    #     masks = self.segmentation_results[0].masks  # 获取分割结果
+    #     class_ids = self.segmentation_results[0].boxes.cls  # 获取类别ID
+
+    #     if masks is not None:
+    #         for i, mask in enumerate(masks.data):  # 直接使用掩码数据
+    #             label = self.label_names[int(class_ids[i])]
+
+    #             # 将 Tensor 转换为 NumPy 数组并转换类型
+    #             mask = mask.cpu().numpy().astype(np.uint8)
+                
+    #             # 提取掩码的边界
+    #             contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    #             boundary_points = contours[0].reshape(-1, 2)  # 获取边界上的所有点
+
+    #             # 计算深度得分
+    #             score = calculate_score(self.depth_map, boundary_points)
+    #             if score > self.depth_threshold:
+    #                 filtered_shapes.append({
+    #                     "label": label,
+    #                     "points": boundary_points.tolist(),
+    #                     "depth-score": score
+    #                 })
+    #     self.candidates = filtered_shapes
 
     def calculate_boarder_distance(self):
         for i in range(len(self.candidates)):
@@ -128,6 +158,7 @@ def calculate_score(depth_map, boundary_points):
         compare_inside_outside(depth_map, point, inside_dilation, outside_dilation)
         for point in boundary_points
     )
+    print(num_greater / num_points)
     return num_greater / num_points
 
 def dilate_boundary(depth_map, boundary_points):
