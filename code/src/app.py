@@ -18,8 +18,6 @@ from strategy import SelectionStrategy
 
 
 
-
-
 app = Flask(__name__) 
 CORS(app)
 https_bp = Blueprint('https', __name__)
