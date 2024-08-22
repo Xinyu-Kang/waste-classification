@@ -1,0 +1,10 @@
+# strategy.yaml
+
+depth_threshold: 0.5  # 深度分数的过滤阈值
+
+filter_labels:  # 需要过滤掉的标签列表
+  - "person"
+  - "car"
+  - "dog"
+
+x_range: [23, 30]  # 定义x坐标的有效范围，距离左边和右边的最小距离
