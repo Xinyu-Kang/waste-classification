@@ -20,10 +20,11 @@ class SelectionStrategy:
         with open('./config/strategy.yaml', 'r') as file:
             config = yaml.safe_load(file)
         
-        # 从配置中获取深度阈值、过滤标签和x轴范围
+        # 从配置中获取深度阈值、过滤标签和x轴范围比例
         self.depth_threshold = config.get('depth_threshold', 0)  # 如果没有定义，默认值为0
         self.filter_labels = config.get('filter_labels', [])  # 如果没有定义，默认值为空列表
         self.x_range = config.get('x_range', [0, 0])  # 默认允许整个图像范围内的x坐标
+
 
     def select(self):
         self.calculate_depth_score()
@@ -46,7 +47,7 @@ class SelectionStrategy:
             if self.is_within_x_range(grasp_point[0]):
                 best_candidate = candidate
                 break
-
+        
         if best_candidate is None:
             return None, None, None
 
@@ -56,8 +57,9 @@ class SelectionStrategy:
     
     def is_within_x_range(self, x):
         image_width = self.image.shape[1]
-        left_limit, right_limit = self.x_range
-        return left_limit <= x <= (image_width - right_limit)
+        left_limit = int(image_width * self.x_range[0])
+        right_limit = int(image_width * (1 - self.x_range[1]))
+        return left_limit <= x <= right_limit
     
 
 
@@ -90,6 +92,7 @@ class SelectionStrategy:
                     })
 
         self.candidates = filtered_shapes
+
 
     # def calculate_depth_score(self):
     #     filtered_shapes = []

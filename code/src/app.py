@@ -47,6 +47,8 @@ with open('./config/yoloconfig.yaml', 'r') as file:
     config_seg = yaml.safe_load(file)
 with open('./config/depthconfig.yaml', 'r') as file:
     config_depth = yaml.safe_load(file)
+with open('./config/strategy.yaml', 'r') as file:
+        strategy_config = yaml.safe_load(file)
 
 # 根据配置文件选择模型
 seg_model_name = config_seg['model']['selected']
@@ -75,20 +77,28 @@ def process_image():
     从request拿到现场图片,进行语义分割和深度预测,并使用策略选择抓取物体。
     :return:物体抓取点在图片上的坐标及物体的类别
     """
+    global strategy_config  # 使用全局配置
     image, filename = get_image(request.files['image'])
+
+    
     
     # 确保图像是三通道（RGB）
     if image.shape[-1] == 4:  # 如果图像是四通道（RGBA）
         image = image[:, :, :3]  # 去掉Alpha通道
 
+    
+
         # 将上下30像素设置为黑色
     height, width, _ = image.shape
 
-    # 上部30像素涂黑
-    image[:30, :] = [0, 0, 0]  # 纯黑色 [B, G, R]，即[0, 0, 0]
+    blackout_top = strategy_config.get('blackout_pixels', {}).get('top', 30)    # 如果未设置，默认为30像素
+    blackout_bottom = strategy_config.get('blackout_pixels', {}).get('bottom', 30)  # 如果未设置，默认为20像素
 
-    # 下部30像素涂黑
-    image[-30:, :] = [0, 0, 0]  # 纯黑色
+    # 上部涂黑
+    image[:blackout_top, :] = [0, 0, 0]  # 纯黑色 [B, G, R]
+    
+    # 下部涂黑
+    image[-blackout_bottom:, :] = [0, 0, 0]  # 纯黑色
 
 
     # 异步上传图像到FTP服务器
@@ -122,12 +132,17 @@ def process_image():
     if image_grab_point is None or label is None or points is None:
         return make_response('', 204)
 
+    # 将抓取的候选点与其他候选点传入绘图函数
+    grasp_candidates = [points]  # 这里的points是通过select方法返回的抓取点
 
-    # 使用线程池来异步保存监控图像
+    # 如果抓取点、标签或points为空，返回204 No Content
+    if image_grab_point is None or label is None or points is None:
+        return make_response('', 204)
+
+    # 使用线程池来异步保存监控图像，直接传递抓取点
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(save_monitoring_image, image, segmentation_results, strategy.candidates, filename,  './monitoring')
-
-   
+        executor.submit(save_monitoring_image, image, segmentation_results, image_grab_point, filename, './monitoring')
+    
 
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})
 

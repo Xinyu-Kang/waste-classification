@@ -1,10 +1,22 @@
 # strategy.yaml
 
-depth_threshold: 0.5  # 深度分数的过滤阈值
+depth_threshold: 0.6  # 深度分数的过滤阈值
 
 filter_labels:  # 需要过滤掉的标签列表
   - "person"
-  - "car"
-  - "dog"
+  - "paper-b"
+  - "eggbox-paper-b"
+  - "eggbox-paper-t"
+  - "office-paper-b"
+  - "office-paper-t"
+  - "paper-t"
+  - "tuotuo-paper-b"
+  - "tuotuo-paper-t"
+  - "zhitong-carboard-t"
+  - "zhitong-paper-t"
 
-x_range: [23, 30]  # 定义x坐标的有效范围，距离左边和右边的最小距离
+x_range: [0, 0]  # 定义x坐标的有效范围，距离左边和右边的最小距离
+
+blackout_pixels:
+  top: 30  # 上部涂黑的像素值
+  bottom: 30  # 下部涂黑的像素值
