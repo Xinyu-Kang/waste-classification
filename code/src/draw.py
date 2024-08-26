@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-def save_monitoring_image(image, segmentation_results, grab_point, filename, monitoring_dir):
+def save_monitoring_image(image, candidates, grab_point, filename, monitoring_dir):
     """
     异步保存监控图片的函数
     :param image: 原始图像
@@ -12,7 +12,7 @@ def save_monitoring_image(image, segmentation_results, grab_point, filename, mon
     """
     try:
         # 在图像上绘制Bounding Box和抓取点
-        image_with_bboxes = draw_bboxes(image, segmentation_results, grab_point)
+        image_with_bboxes = draw_bboxes(image, candidates, grab_point)
         
         # 保存监控图像到本地文件夹
         monitoring_filename = os.path.join(monitoring_dir, filename)
@@ -22,7 +22,7 @@ def save_monitoring_image(image, segmentation_results, grab_point, filename, mon
     except Exception as e:
         print(f"Failed to save monitoring image: {e}")
 
-def draw_bboxes(image, segmentation_results, grab_point):
+def draw_bboxes(image, candidates, grab_point):
     """
     在图像上绘制经过筛选的结果，并突出显示策略选出的抓取点。
     :param image: 原始图像
@@ -36,29 +36,23 @@ def draw_bboxes(image, segmentation_results, grab_point):
     image = np.array(image, dtype=np.uint8)
 
     # 绘制YOLO的分割结果
-    for result in segmentation_results:
-        masks = result.masks
-        class_ids = result.boxes.cls.cpu().numpy()
+    for c in candidates:
+        label = c['label']
+        points = c['points'].reshape((-1, 1, 2))  # 使用 xy 数据进行绘制
+        depth_score = c['depth-score']
 
-        for i, mask in enumerate(masks.xy):
-            label = result.names[int(class_ids[i])]
-            points = np.array(mask, dtype=np.int32).reshape((-1, 1, 2))  # 使用 xy 数据进行绘制
-            
-            # 获取深度分数，假设 segmentation_results 对象中包含该信息
-            depth_score = result.boxes.conf[i] if hasattr(result.boxes, 'conf') else 0
+        # 默认将分割的物体标记为绿色
+        color = (0, 255, 0)  # 绿色
 
-            # 默认将分割的物体标记为绿色
-            color = (0, 255, 0)  # 绿色
-
-            # 绘制多边形边界
-            cv2.polylines(image, [points], isClosed=True, color=color, thickness=2)
-            
-            # 计算边界框
-            x, y, w, h = cv2.boundingRect(points)
-            
-            # 绘制标签和深度分数
-            cv2.putText(image, f'{label}: {depth_score:.2f}', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
+        # 绘制多边形边界
+        cv2.polylines(image, [points], isClosed=True, color=color, thickness=2)
+        
+        # 计算边界框
+        x, y, w, h = cv2.boundingRect(points)
+        
+        # 绘制标签和深度分数
+        cv2.putText(image, f'{label}: {depth_score:.2f}', (x, y - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
 
     # 绘制抓取点
     if grab_point is not None:

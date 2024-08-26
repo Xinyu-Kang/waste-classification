@@ -48,7 +48,7 @@ with open('./config/yoloconfig.yaml', 'r') as file:
 with open('./config/depthconfig.yaml', 'r') as file:
     config_depth = yaml.safe_load(file)
 with open('./config/strategy.yaml', 'r') as file:
-        strategy_config = yaml.safe_load(file)
+    strategy_config = yaml.safe_load(file)
 
 # 根据配置文件选择模型
 seg_model_name = config_seg['model']['selected']
@@ -114,10 +114,6 @@ def process_image():
         return make_response('', 204)
 
     depth_map = depth_model.predict(image)
-
-    # 归一化深度图，确保与第二段代码一致
-    depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min()) * 255.0
-    depth_map = depth_map.astype(np.uint8)
 
 
     # 如果深度模型没有返回结果，返回204 No Content
