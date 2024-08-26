@@ -1,6 +1,6 @@
 # strategy.yaml
 
-depth_threshold: 0  # 深度分数的过滤阈值
+depth_threshold: 0.6  # 深度分数的过滤阈值
 
 filter_labels:  # 需要过滤掉的标签列表
   - "person"

@@ -26,6 +26,7 @@ class SelectionStrategy:
         self.x_range = config.get('x_range', [0, 0])  # 默认允许整个图像范围内的x坐标
 
     def select(self):
+        print("\n================= Select =================\n")
         self.calculate_depth_score()
         self.calculate_area()
         best_candidate = None
@@ -47,17 +48,23 @@ class SelectionStrategy:
             grasp_point = self.calculate_grasp_point(candidate['points'])
             if self.is_within_x_range(grasp_point[0]):
                 best_candidate = candidate
+                print("Best: ", best_candidate['id'])
                 break
-
-        print(self.candidates)
         
-        if best_candidate is None:
-            return None, None, None, None
+        self.candidates[best_candidate['id']]['is-best'] = True
+
+        # for c in self.candidates:
+        #     print('')
+        #     print(c['id'])
+        #     print(c['is-selected'])
+        #     print(c['is-best'])
+        #     print(c['depth-score'])
 
         # 返回选定区域的抓取点、标签及所有points
         return grasp_point, best_candidate['label'], best_candidate['points'], self.candidates 
 
     def calculate_depth_score(self):
+        print("\n===== Calculate depth score =====\n")
         masks = self.segmentation_results[0].masks
         class_ids = self.segmentation_results[0].boxes.cls
 
@@ -73,10 +80,12 @@ class SelectionStrategy:
                 score = calculate_score(self.depth_map, points)
                 print("score: ", score)
                 candidate_info = {
+                    "id": i,
                     "label": label,
                     "points": points,
                     "depth-score": score,
-                    "is-max-candidate": False
+                    "is-max-depth": False,
+                    "is-best": False
                 }
                 candidate_info["is-selected"] = (score >= self.depth_threshold)
                 self.candidates.append(candidate_info)

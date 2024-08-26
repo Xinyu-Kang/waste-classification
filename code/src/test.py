@@ -45,7 +45,6 @@ if __name__ == '__main__':
 
     print("\n选择物体...")
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
-    object = strategy.select()
     image_grab_point, label, points, all_candidates = strategy.select()
     print("grab point: ", image_grab_point)
     save_monitoring_image(image, all_candidates, image_grab_point, "photo_2.jpg", "../../monitoring")

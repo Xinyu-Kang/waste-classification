@@ -40,9 +40,12 @@ def draw_bboxes(image, candidates, grab_point):
         label = c['label']
         points = c['points'].reshape((-1, 1, 2))  # 使用 xy 数据进行绘制
         depth_score = c['depth-score']
+        is_selected = c['is-selected']
+        is_max_depth = c['is-max-depth']
+        is_best = c['is-best']
 
-        # 默认将分割的物体标记为绿色
-        color = (0, 255, 0)  # 绿色
+        color = (0, 0, 255) if is_best else (0, 255, 0) if is_selected else (255, 0, 0)
+        # color = (255, 0, 0) if is_best else (0, 255, 0)
 
         # 绘制多边形边界
         cv2.polylines(image, [points], isClosed=True, color=color, thickness=2)
