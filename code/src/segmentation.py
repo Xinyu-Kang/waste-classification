@@ -19,8 +19,19 @@ class SegmentationModel:
         model_path = f'../checkpoints/segmentation/{self.model_name}.pt'
         if os.path.exists(model_path):
             self.model = YOLO(model_path).to('cuda' if torch.cuda.is_available() else 'cpu')
+            self.print_supported_labels()
         else:
             raise ValueError(f"Model file not found: {model_path}")
+
+    def print_supported_labels(self):
+        """
+        打印模型支持的所有类别标签。
+        """
+        if self.model is not None:
+            labels = self.model.names  # 获取类别标签
+            print(f"Model supports the following labels: {labels}")
+        else:
+            print("Model not loaded, cannot retrieve labels.")
         
     def get_label_names(self):
         model_names = self.model.names

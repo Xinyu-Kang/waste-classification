@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import yaml
 
 class SelectionStrategy:
 
@@ -12,78 +13,76 @@ class SelectionStrategy:
         self.area_threshold = 0
         self.candidates = None
 
+        # 加载策略配置
+        self.load_strategy_config()
+    
+    def load_strategy_config(self):
+        with open('./config/strategy.yaml', 'r') as file:
+            config = yaml.safe_load(file)
+        
+        # 从配置中获取深度阈值、过滤标签和x轴范围比例
+        self.depth_threshold = config.get('depth_threshold', 0)  # 如果没有定义，默认值为0
+        self.filter_labels = config.get('filter_labels', [])  # 如果没有定义，默认值为空列表
+        self.x_range = config.get('x_range', [0, 0])  # 默认允许整个图像范围内的x坐标
+
+
     def select(self):
         self.calculate_depth_score()
         self.calculate_boarder_distance()
-        # self.calculate_area()
         best_candidate = None
-        best_depth_score = -1
-        valid_candidates = self.candidates
-        
 
-        # 设置面积的最小阈值
-        area_threshold = 0  # 你可以根据实际情况调整这个值
-        
-        # 过滤出面积大于阈值的候选区域
-        # valid_candidates = [
-        #     candidate for candidate in self.candidates if candidate['area'] > area_threshold
-        # ]
-        
-        if not valid_candidates:
-            print("no valied canditates")
+        if not self.candidates:
+            print("no valid candidates")
             return None, None, None
-        
+
         # 找出深度分数最大的候选区域
-        max_depth_score = max(candidate['depth-score'] for candidate in valid_candidates)
+        max_depth_score = max(candidate['depth-score'] for candidate in self.candidates)
         max_depth_candidates = [
-            candidate for candidate in valid_candidates if candidate['depth-score'] == max_depth_score
+            candidate for candidate in self.candidates if candidate['depth-score'] == max_depth_score
         ]
 
-        # 如果有多个深度分数相同的候选区域，则选择 x 坐标最大的那个
-        if len(max_depth_candidates) > 1:
-            max_depth_candidates.sort(key=lambda x: max(np.array(x['points'])[:, 0]), reverse=True)
-
-        best_candidate = max_depth_candidates[0]
-
-        # 计算抓取点
-        grasp_point = self.calculate_grasp_point(best_candidate['points'])
+        # 如果有多个深度分数相同的候选区域，则选择x坐标在指定范围内的那个
+        for candidate in max_depth_candidates:
+            grasp_point = self.calculate_grasp_point(candidate['points'])
+            if self.is_within_x_range(grasp_point[0]):
+                best_candidate = candidate
+                break
+        
+        if best_candidate is None:
+            return None, None, None
 
         # 返回选定区域的抓取点、标签及所有points
-        label = best_candidate['label']
+        return grasp_point, best_candidate['label'], best_candidate['points']
 
-        return grasp_point, label, best_candidate['points']
+    
+    def is_within_x_range(self, x):
+        image_width = self.image.shape[1]
+        left_limit = int(image_width * self.x_range[0])
+        right_limit = int(image_width * (1 - self.x_range[1]))
+        return left_limit <= x <= right_limit
     
 
 
     def calculate_grasp_point(self, points):
-        # 将points转换为NumPy数组
         boundary_points = np.array(points, dtype=np.int32)
-        
-        # 创建一个二值掩码图像
         mask = np.zeros(self.depth_map.shape[:2], dtype=np.uint8)
         cv2.fillPoly(mask, [boundary_points], color=255)
-        
-        # 计算距离变换
         dist_transform = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
         _, _, _, max_loc = cv2.minMaxLoc(dist_transform)
-        
         return max_loc
 
     def calculate_depth_score(self):
         filtered_shapes = []
-        masks = self.segmentation_results[0].masks  # 获取分割结果
-        class_ids = self.segmentation_results[0].boxes.cls  # 获取类别ID
-        
+        masks = self.segmentation_results[0].masks
+        class_ids = self.segmentation_results[0].boxes.cls
+
         if masks is not None:
             for i, mask in enumerate(masks.xy):
-                label = self.label_names[int(class_ids[i])]  # 从模型中获取类别名称
-                points = np.array(mask, dtype=np.int32)  # 获取多边形的像素点坐标
+                label = self.label_names[int(class_ids[i])]
+                if label in self.filter_labels:
+                    continue
 
-                # resampled_points = uniform_resample(points, 2)
-                
-                # resampled_points = np.array(resampled_points, dtype=np.int32)
-
-                # 计算深度得分
+                points = np.array(mask, dtype=np.int32)
                 score = calculate_score(self.depth_map, points)
                 if score > self.depth_threshold:
                     filtered_shapes.append({
@@ -93,6 +92,7 @@ class SelectionStrategy:
                     })
 
         self.candidates = filtered_shapes
+
 
     # def calculate_depth_score(self):
     #     filtered_shapes = []
