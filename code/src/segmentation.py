@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 import torch
-from ultralytics import YOLO
+from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 import os
+
 
 class SegmentationModel:
 
@@ -45,6 +46,8 @@ class SegmentationModel:
         """
         if self.model is None:
             raise RuntimeError("Model not loaded, please call load() before predict()")
+        
+        print("Input size: ", image.shape)
         
         height, width = image.shape[:2]
 
