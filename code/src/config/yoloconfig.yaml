@@ -1,5 +1,5 @@
 model:
-  selected: best-rgbd  # 在这里选择要使用的模型
+  selected: best-cards  # 在这里选择要使用的模型
   available:
     - yolov8-seg
     - yolov10
@@ -7,3 +7,4 @@ model:
     - best-updated
     - best-cookies
     - best-rgbd
+    - best-cards

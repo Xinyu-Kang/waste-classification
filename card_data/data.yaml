@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['card']
+
+roboflow:
+  workspace: zzdance
+  project: card-h5qy9
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/zzdance/card-h5qy9/dataset/1

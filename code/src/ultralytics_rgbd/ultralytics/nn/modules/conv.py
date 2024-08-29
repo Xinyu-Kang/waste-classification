@@ -40,9 +40,6 @@ class Conv(nn.Module):
 
     def __init__(self, c1, c2, k=1, s=1, p=None, g=1, d=1, act=True):
         """Initialize Conv layer with given arguments including activation."""
-        print("\n==================== Conv ====================\n")
-        print("Channel in: ", c1)
-        print("Channel out: ", c2)
         super().__init__()
         self.conv = nn.Conv2d(c1, c2, k, s, autopad(k, p, d), groups=g, dilation=d, bias=False)
         self.bn = nn.BatchNorm2d(c2)
@@ -50,12 +47,15 @@ class Conv(nn.Module):
 
     def forward(self, x):
         """Apply convolution, batch normalization and activation to input tensor."""
+        print("\n===================\n")
+        print("Conv forward input: ", x.shape)
         return self.act(self.bn(self.conv(x)))
 
     def forward_fuse(self, x):
         """Perform transposed convolution of 2D data."""
         print("\n===================\n")
-        print("X: ", x.shape)
+        print("Conv forward_fuse input: ", x.shape)
+        print("Conv: ", self.conv)
         return self.act(self.conv(x))
 
 
@@ -73,6 +73,9 @@ class Conv2(Conv):
 
     def forward_fuse(self, x):
         """Apply fused convolution, batch normalization and activation to input tensor."""
+        print("\n===================\n")
+        print("Conv2 forward_fuse input: ", x.shape)
+        print("Conv2: ", self.conv)
         return self.act(self.bn(self.conv(x)))
 
     def fuse_convs(self):
