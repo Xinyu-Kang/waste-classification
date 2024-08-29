@@ -31,7 +31,7 @@ if __name__ == '__main__':
     depth_model = DepthModel(depth_model_name)
 
     print("\n读取图片...")
-    image = cv2.imread("../../small_test_data/photo_2.jpg")
+    image = cv2.imread("../../small_test_data/photo_1.jpg")
 
     print("\n语义分割...")
     segmentation_results = segmentation_model.predict(image)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
     print("grab point: ", image_grab_point)
-    save_monitoring_image(image, all_candidates, image_grab_point, "photo_2.jpg", "../../monitoring")
+    save_monitoring_image(image, all_candidates, image_grab_point, "photo_1.jpg", "../../monitoring")
 
     # # print(object)
     # image_grab_point = object["points"][0]
