@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     print("\n读取图片...")
     # image = cv2.imread("../../small_test_data/photo_2.jpg")
-    image = cv2.imread("../../cookie_data/test/rgb_images/1_rot-90_rot-90_rot-90.rf.215d71b93ae4bef03b58a8260d6f2760.jpg")
+    image = cv2.imread("../../small_test_data/photo_1.jpg")
 
     print("\n深度预测...")
     depth_map = depth_model.predict(image)
@@ -44,4 +44,4 @@ if __name__ == '__main__':
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
     print("grab point: ", image_grab_point)
-    save_monitoring_image(image, all_candidates, image_grab_point, "1_rot-90_rot-90_rot-90.jpg", "../../monitoring")
+    save_monitoring_image(image, all_candidates, image_grab_point, "photo_1_rgbd.jpg", "../../monitoring")

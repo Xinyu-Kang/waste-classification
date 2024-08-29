@@ -1,8 +1,9 @@
 model:
-  selected: best-cookies  # 在这里选择要使用的模型
+  selected: best-rgbd  # 在这里选择要使用的模型
   available:
     - yolov8-seg
     - yolov10
     - best
     - best-updated
     - best-cookies
+    - best-rgbd
