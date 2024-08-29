@@ -319,7 +319,7 @@ if __name__ == "__main__":
     # Create an argument parser to handle command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, required=True, help="Path to ONNX model")
-    parser.add_argument("--source", type=str, default=str(ASSETS / "bus.jpg"), help="Path to input image")
+    parser.add_argument("--source", type=str, default=str(ASSETS / "bus.png"), help="Path to input image")
     parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold")
     parser.add_argument("--iou", type=float, default=0.45, help="NMS IoU threshold")
     args = parser.parse_args()
@@ -328,7 +328,7 @@ if __name__ == "__main__":
     model = YOLOv8Seg(args.model)
 
     # Read image by OpenCV
-    img = cv2.imread(args.source)
+    img = cv2.imread(args.source, cv2.IMREAD_UNCHANGED)
 
     # Inference
     boxes, segments, _ = model(img, conf_threshold=args.conf, iou_threshold=args.iou)

@@ -14,7 +14,7 @@ def test_similarity():
     exp.create_embeddings_table()
     similar = exp.get_similar(idx=1)
     assert len(similar) == 4
-    similar = exp.get_similar(img=ASSETS / "bus.jpg")
+    similar = exp.get_similar(img=ASSETS / "bus.png")
     assert len(similar) == 4
     similar = exp.get_similar(idx=[1, 2], limit=2)
     assert len(similar) == 2

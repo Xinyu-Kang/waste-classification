@@ -36,7 +36,7 @@ import numpy as np
 import torch.cuda
 import yaml
 
-from ultralytics import YOLO, YOLOWorld
+from ultralytics_rgbd.ultralytics.models.yolo import YOLO, YOLOWorld
 from ultralytics.cfg import TASK2DATA, TASK2METRIC
 from ultralytics.engine.exporter import export_formats
 from ultralytics.utils import ARM64, ASSETS, IS_JETSON, IS_RASPBERRYPI, LINUX, LOGGER, MACOS, TQDM, WEIGHTS_DIR
@@ -129,7 +129,7 @@ def benchmark(
             assert i != 5 or platform.system() == "Darwin", "inference only supported on macOS>=10.13"  # CoreML
             if i in {12}:
                 assert not is_end2end, "End-to-end torch.topk operation is not supported for NCNN prediction yet"
-            exported_model.predict(ASSETS / "bus.jpg", imgsz=imgsz, device=device, half=half)
+            exported_model.predict(ASSETS / "bus.png", imgsz=imgsz, device=device, half=half)
 
             # Validate
             data = data or TASK2DATA[model.task]  # task to dataset, i.e. coco8.yaml for task=detect

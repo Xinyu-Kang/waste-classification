@@ -294,10 +294,13 @@ class BaseModel(nn.Module):
 class DetectionModel(BaseModel):
     """YOLOv8 detection model."""
 
-    def __init__(self, cfg="yolov8n.yaml", ch=3, nc=None, verbose=True):  # model, input channels, number of classes
+    def __init__(self, cfg="yolov8n.yaml", ch=4, nc=None, verbose=True):  # model, input channels, number of classes
         """Initialize the YOLOv8 detection model with the given config and parameters."""
         super().__init__()
+        print("DetectionModel ch: ", ch)
+        print("Config: ", cfg)
         self.yaml = cfg if isinstance(cfg, dict) else yaml_model_load(cfg)  # cfg dict
+        print("YAML: ", self.yaml)
         if self.yaml["backbone"][0][2] == "Silence":
             LOGGER.warning(
                 "WARNING ⚠️ YOLOv9 `Silence` module is deprecated in favor of nn.Identity. "
@@ -306,7 +309,7 @@ class DetectionModel(BaseModel):
             self.yaml["backbone"][0][2] = "nn.Identity"
 
         # Define model
-        ch = self.yaml["ch"] = self.yaml.get("ch", ch)  # input channels
+        # ch = self.yaml["ch"] = self.yaml.get("ch", ch)  # input channels
         if nc and nc != self.yaml["nc"]:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml["nc"] = nc  # override YAML value
@@ -389,7 +392,7 @@ class DetectionModel(BaseModel):
 class OBBModel(DetectionModel):
     """YOLOv8 Oriented Bounding Box (OBB) model."""
 
-    def __init__(self, cfg="yolov8n-obb.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolov8n-obb.yaml", ch=4, nc=None, verbose=True):
         """Initialize YOLOv8 OBB model with given config and parameters."""
         super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
 
@@ -401,7 +404,7 @@ class OBBModel(DetectionModel):
 class SegmentationModel(DetectionModel):
     """YOLOv8 segmentation model."""
 
-    def __init__(self, cfg="yolov8n-seg.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolov8n-seg.yaml", ch=4, nc=None, verbose=True):
         """Initialize YOLOv8 segmentation model with given config and parameters."""
         super().__init__(cfg=cfg, ch=ch, nc=nc, verbose=verbose)
 
@@ -413,7 +416,7 @@ class SegmentationModel(DetectionModel):
 class PoseModel(DetectionModel):
     """YOLOv8 pose model."""
 
-    def __init__(self, cfg="yolov8n-pose.yaml", ch=3, nc=None, data_kpt_shape=(None, None), verbose=True):
+    def __init__(self, cfg="yolov8n-pose.yaml", ch=4, nc=None, data_kpt_shape=(None, None), verbose=True):
         """Initialize YOLOv8 Pose model."""
         if not isinstance(cfg, dict):
             cfg = yaml_model_load(cfg)  # load model YAML
@@ -430,7 +433,7 @@ class PoseModel(DetectionModel):
 class ClassificationModel(BaseModel):
     """YOLOv8 classification model."""
 
-    def __init__(self, cfg="yolov8n-cls.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolov8n-cls.yaml", ch=4, nc=None, verbose=True):
         """Init ClassificationModel with YAML, channels, number of classes, verbose flag."""
         super().__init__()
         self._from_yaml(cfg, ch, nc, verbose)
@@ -497,7 +500,7 @@ class RTDETRDetectionModel(DetectionModel):
         predict: Performs a forward pass through the network and returns the output.
     """
 
-    def __init__(self, cfg="rtdetr-l.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="rtdetr-l.yaml", ch=4, nc=None, verbose=True):
         """
         Initialize the RTDETRDetectionModel.
 
@@ -597,7 +600,7 @@ class RTDETRDetectionModel(DetectionModel):
 class WorldModel(DetectionModel):
     """YOLOv8 World Model."""
 
-    def __init__(self, cfg="yolov8s-world.yaml", ch=3, nc=None, verbose=True):
+    def __init__(self, cfg="yolov8s-world.yaml", ch=4, nc=None, verbose=True):
         """Initialize YOLOv8 world model with given config and parameters."""
         self.txt_feats = torch.randn(1, nc or 80, 512)  # features placeholder
         self.clip_model = None  # CLIP model placeholder
@@ -772,18 +775,19 @@ def torch_safe_load(weight):
     try:
         with temporary_modules(
             modules={
-                "ultralytics.yolo.utils": "ultralytics.utils",
-                "ultralytics.yolo.v8": "ultralytics.models.yolo",
-                "ultralytics.yolo.data": "ultralytics.data",
+                "ultralytics.yolo.utils": "ultralytics_rgbd.ultralytics.utils",
+                "ultralytics.yolo.v8": "ultralytics_rgbd.ultralytics.models.yolo",
+                "ultralytics.yolo.data": "ultralytics_rgbd.ultralytics.data",
             },
             attributes={
                 "ultralytics.nn.modules.block.Silence": "torch.nn.Identity",  # YOLOv9e
-                "ultralytics.nn.tasks.YOLOv10DetectionModel": "ultralytics.nn.tasks.DetectionModel",  # YOLOv10
+                "ultralytics.nn.tasks.YOLOv10DetectionModel": "ultralytics_rgbd.ultralytics.nn.tasks.DetectionModel",  # YOLOv10
             },
         ):
             ckpt = torch.load(file, map_location="cpu")
 
     except ModuleNotFoundError as e:  # e.name is missing module name
+        print(e.msg)
         if e.name == "models":
             raise TypeError(
                 emojis(
@@ -881,7 +885,7 @@ def attempt_load_one_weight(weight, device=None, inplace=True, fuse=False):
 def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
     """Parse a YOLO model.yaml dictionary into a PyTorch model."""
     import ast
-
+    print("parse_model ch: ", ch)
     # Args
     max_channels = float("inf")
     nc, act, scales = (d.get(x) for x in ("nc", "activation", "scales"))

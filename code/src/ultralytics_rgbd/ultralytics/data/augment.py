@@ -1899,10 +1899,23 @@ class Albumentations:
                     bboxes = np.array(new["bboxes"], dtype=np.float32)
                 labels["instances"].update(bboxes=bboxes)
         else:
-            labels["img"] = self.transform(image=labels["img"])["image"]  # transformed
+            # labels["img"] = self.transform(image=labels["img"])["image"]  # transformed
+            im = labels["img"]
+            rgb, d = split_channels(im)
+
+            # Apply transformations to the RGB channels only
+            new_rgb = self.transform(image=rgb)["image"]
+
+            # Merge back with the D channel
+            labels["img"] = merge_channels(new_rgb, d)
 
         return labels
 
+def split_channels(image):
+    return image[:, :, :3], image[:, :, 3]  # RGB, D
+
+def merge_channels(rgb, d):
+    return np.concatenate((rgb, d[:, :, np.newaxis]), axis=2)
 
 class Format:
     """

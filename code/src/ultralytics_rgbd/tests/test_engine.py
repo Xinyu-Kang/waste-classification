@@ -4,7 +4,7 @@ import sys
 from unittest import mock
 
 from tests import MODEL
-from ultralytics import YOLO
+from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 from ultralytics.cfg import get_cfg
 from ultralytics.engine.exporter import Exporter
 from ultralytics.models.yolo import classify, detect, segment

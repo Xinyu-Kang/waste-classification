@@ -198,7 +198,7 @@ class ParkingManagement:
 
     def load_model(self):
         """Load the Ultralytics YOLO model for inference and analytics."""
-        from ultralytics import YOLO
+        from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 
         return YOLO(self.model_path)
 

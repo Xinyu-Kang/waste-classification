@@ -1,20 +1,10 @@
-import cv2
-import numpy as np
 import yaml
 import torch
 
-from segmentation import SegmentationModel 
-
-
 if __name__ == "__main__":
 
-    # Get the model name
-    with open('./config/yoloconfig.yaml', 'r') as file:
-        config_seg = yaml.safe_load(file)
-    model_name = config_seg['model']['selected']
-
-     # Load the pre-trained checkpoint
-    checkpoint_path = f'../checkpoints/segmentation/{model_name}.pt'
+    # Load the pre-trained checkpoint
+    checkpoint_path = 'yolov8n.pt'
     checkpoint = torch.load(checkpoint_path)
 
     # Get the state dict
@@ -32,13 +22,14 @@ if __name__ == "__main__":
     # Update the state dictionary with the new weights
     state_dict['model.0.conv.weight'] = new_weights
 
-     # Update the first layer for 4-channel inputs
-    checkpoint['model'].model[0].conv = torch.nn.Conv2d(4, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
-
+    # Update the first layer for 4-channel inputs
+    # Use the original number of output channels
+    num_output_channels = original_weights.shape[0]
+    checkpoint['model'].model[0].conv = torch.nn.Conv2d(4, num_output_channels, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
 
     # Update the checkpoint with the modified state dictionary
     checkpoint['model'].load_state_dict(state_dict, strict=False)
 
     # Save the modified checkpoint
-    updated_checkpoint_path = f'../checkpoints/segmentation/{model_name}-updated.pt'
+    updated_checkpoint_path = 'yolov8n_updated.pt'
     torch.save(checkpoint, updated_checkpoint_path)

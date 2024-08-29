@@ -198,7 +198,7 @@ def update_models(model_names=("yolov8n.pt",), source_dir=Path("."), update_name
         >>> model_names = ("yolov8n.pt", "yolov8s.pt")
         >>> update_models(model_names, source_dir=Path("/models"), update_names=True)
     """
-    from ultralytics import YOLO
+    from ultralytics_rgbd.ultralytics.models.yolo import YOLO
     from ultralytics.nn.autobackend import default_class_names
 
     target_dir = source_dir / "updated_models"

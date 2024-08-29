@@ -161,7 +161,7 @@ class Yolov8TFLite:
             image_data: Preprocessed image data ready for inference.
         """
         # Read the input image using OpenCV
-        self.img = cv2.imread(self.input_image)
+        self.img = cv2.imread(self.input_image, cv2.IMREAD_UNCHANGED)
 
         print("image before", self.img)
         # Get the height and width of the input image
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model", type=str, default="yolov8n_full_integer_quant.tflite", help="Input your TFLite model."
     )
-    parser.add_argument("--img", type=str, default=str(ASSETS / "bus.jpg"), help="Path to input image.")
+    parser.add_argument("--img", type=str, default=str(ASSETS / "bus.png"), help="Path to input image.")
     parser.add_argument("--conf-thres", type=float, default=0.5, help="Confidence threshold")
     parser.add_argument("--iou-thres", type=float, default=0.5, help="NMS IoU threshold")
     args = parser.parse_args()

@@ -15,7 +15,7 @@ def inference(model=None):
     check_requirements("streamlit>=1.29.0")  # scope imports for faster ultralytics package load speeds
     import streamlit as st
 
-    from ultralytics import YOLO
+    from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 
     # Hide main menu style
     menu_style_cfg = """<style>MainMenu {visibility: hidden;}</style>"""

@@ -83,7 +83,7 @@ class YOLOv8:
             image_data: Preprocessed image data ready for inference.
         """
         # Read the input image using OpenCV
-        self.img = cv2.imread(self.input_image)
+        self.img = cv2.imread(self.input_image, cv2.IMREAD_UNCHANGED)
 
         # Get the height and width of the input image
         self.img_height, self.img_width = self.img.shape[:2]
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     # Create an argument parser to handle command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="yolov8n.onnx", help="Input your ONNX model.")
-    parser.add_argument("--img", type=str, default=str(ASSETS / "bus.jpg"), help="Path to input image.")
+    parser.add_argument("--img", type=str, default=str(ASSETS / "bus.png"), help="Path to input image.")
     parser.add_argument("--conf-thres", type=float, default=0.5, help="Confidence threshold")
     parser.add_argument("--iou-thres", type=float, default=0.5, help="NMS IoU threshold")
     args = parser.parse_args()

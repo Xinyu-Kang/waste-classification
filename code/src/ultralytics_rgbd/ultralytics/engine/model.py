@@ -810,6 +810,8 @@ class Model(nn.Module):
             self.model = self.trainer.model
 
         self.trainer.hub_session = self.session  # attach optional HUB session
+        print("\n=============== Model ===============\n")
+        print("Trainer: ", self.trainer)
         self.trainer.train()
         # Update model and cfg after training
         if RANK in {-1, 0}:
@@ -911,7 +913,7 @@ class Model(nn.Module):
             >>> print(model.names)
             {0: 'person', 1: 'bicycle', 2: 'car', ...}
         """
-        from ultralytics.nn.autobackend import check_class_names
+        from ultralytics_rgbd.ultralytics.nn.autobackend import check_class_names
 
         if hasattr(self.model, "names"):
             return check_class_names(self.model.names)

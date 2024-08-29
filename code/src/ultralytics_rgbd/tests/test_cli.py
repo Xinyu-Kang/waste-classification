@@ -57,15 +57,15 @@ def test_rtdetr(task="detect", model="yolov8n-rtdetr.yaml", data="coco8.yaml"):
     """Test the RTDETR functionality within Ultralytics for detection tasks using specified model and data."""
     # Warning: must use imgsz=640 (note also add coma, spaces, fraction=0.25 args to test single-image training)
     run(f"yolo train {task} model={model} data={data} --imgsz= 160 epochs =1, cache = disk fraction=0.25")
-    run(f"yolo predict {task} model={model} source={ASSETS / 'bus.jpg'} imgsz=160 save save_crop save_txt")
+    run(f"yolo predict {task} model={model} source={ASSETS / 'bus.png'} imgsz=160 save save_crop save_txt")
     if TORCH_1_9:
-        run(f"yolo predict {task} model='rtdetr-l.pt' source={ASSETS / 'bus.jpg'} imgsz=160 save save_crop save_txt")
+        run(f"yolo predict {task} model='rtdetr-l.pt' source={ASSETS / 'bus.png'} imgsz=160 save save_crop save_txt")
 
 
 @pytest.mark.skipif(checks.IS_PYTHON_3_12, reason="MobileSAM with CLIP is not supported in Python 3.12")
 def test_fastsam(task="segment", model=WEIGHTS_DIR / "FastSAM-s.pt", data="coco8-seg.yaml"):
     """Test FastSAM model for segmenting objects in images using various prompts within Ultralytics."""
-    source = ASSETS / "bus.jpg"
+    source = ASSETS / "bus.png"
 
     run(f"yolo segment val {task} model={model} data={data} imgsz=32")
     run(f"yolo segment predict model={model} source={source} imgsz=32 save save_crop save_txt")

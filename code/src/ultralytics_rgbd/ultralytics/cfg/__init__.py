@@ -353,7 +353,7 @@ def get_save_dir(args, name=None):
     if getattr(args, "save_dir", None):
         save_dir = args.save_dir
     else:
-        from ultralytics.utils.files import increment_path
+        from ultralytics_rgbd.ultralytics.utils.files import increment_path
 
         project = args.project or (ROOT.parent / "tests/tmp/runs" if TESTS_RUNNING else RUNS_DIR) / args.task
         name = name or args.name or f"{args.mode}"
@@ -800,7 +800,7 @@ def entrypoint(debug=""):
 
         model = SAM(model)
     else:
-        from ultralytics import YOLO
+        from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 
         model = YOLO(model, task=task)
     if isinstance(overrides.get("pretrained"), str):

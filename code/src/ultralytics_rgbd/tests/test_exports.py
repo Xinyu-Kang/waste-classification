@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from tests import MODEL, SOURCE
-from ultralytics import YOLO
+from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 from ultralytics.cfg import TASK2DATA, TASK2MODEL, TASKS
 from ultralytics.utils import (
     IS_RASPBERRYPI,

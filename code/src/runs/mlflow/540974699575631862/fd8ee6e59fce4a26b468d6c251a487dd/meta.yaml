@@ -1,0 +1,15 @@
+artifact_uri: /home/xinyukang/ZZDance2.0/code/src/runs/mlflow/540974699575631862/fd8ee6e59fce4a26b468d6c251a487dd/artifacts
+end_time: 1724740129910
+entry_point_name: ''
+experiment_id: '540974699575631862'
+lifecycle_stage: active
+run_id: fd8ee6e59fce4a26b468d6c251a487dd
+run_name: train4
+run_uuid: fd8ee6e59fce4a26b468d6c251a487dd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1724740021117
+status: 3
+tags: []
+user_id: xinyukang

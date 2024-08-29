@@ -981,7 +981,7 @@ def plot_images(
         images *= 255  # de-normalise (optional)
 
     # Build Image
-    mosaic = np.full((int(ns * h), int(ns * w), 3), 255, dtype=np.uint8)  # init
+    mosaic = np.full((int(ns * h), int(ns * w), 4), 255, dtype=np.uint8)  # init
     for i in range(bs):
         x, y = int(w * (i // ns)), int(h * (i % ns))  # block origin
         mosaic[y : y + h, x : x + w, :] = images[i].transpose(1, 2, 0)
@@ -1077,7 +1077,10 @@ def plot_images(
                 annotator.fromarray(im)
     if not save:
         return np.asarray(annotator.im)
-    annotator.im.save(fname)  # save
+    
+    fname = fname.with_suffix('.png')
+    annotator.im.save(fname, 'PNG')
+    # annotator.im.save(fname)  # save
     if on_plot:
         on_plot(fname)
 

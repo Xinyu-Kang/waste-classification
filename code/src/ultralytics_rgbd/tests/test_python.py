@@ -72,7 +72,7 @@ def test_predict_txt():
     """Tests YOLO predictions with file, directory, and pattern sources listed in a text file."""
     txt_file = TMP / "sources.txt"
     with open(txt_file, "w") as f:
-        for x in [ASSETS / "bus.jpg", ASSETS, ASSETS / "*", ASSETS / "**/*.jpg"]:
+        for x in [ASSETS / "bus.png", ASSETS, ASSETS / "*", ASSETS / "**/*.jpg"]:
             f.write(f"{x}\n")
     _ = YOLO(MODEL)(source=txt_file, imgsz=32)
 
@@ -81,7 +81,7 @@ def test_predict_txt():
 def test_predict_img(model_name):
     """Test YOLO model predictions on various image input types and sources, including online images."""
     model = YOLO(WEIGHTS_DIR / model_name)
-    im = cv2.imread(str(SOURCE))  # uint8 numpy array
+    im = cv2.imread(str(SOURCE), cv2.IMREAD_UNCHANGED)  # uint8 numpy array
     assert len(model(source=Image.open(SOURCE), save=True, verbose=True, imgsz=32)) == 1  # PIL
     assert len(model(source=im, save=True, save_txt=True, imgsz=32)) == 1  # ndarray
     assert len(model(torch.rand((2, 3, 32, 32)), imgsz=32)) == 2  # batch-size 2 Tensor, FP32 0.0-1.0 RGB order
@@ -92,7 +92,7 @@ def test_predict_img(model_name):
         str(SOURCE),  # filename
         Path(SOURCE),  # Path
         "https://github.com/ultralytics/assets/releases/download/v0.0.0/zidane.jpg" if ONLINE else SOURCE,  # URI
-        cv2.imread(str(SOURCE)),  # OpenCV
+        cv2.imread(str(SOURCE), cv2.IMREAD_UNCHANGED),  # OpenCV
         Image.open(SOURCE),  # PIL
         np.zeros((320, 640, 3), dtype=np.uint8),  # numpy
     ]
@@ -124,7 +124,7 @@ def test_predict_grey_and_4ch():
     # Inference
     model = YOLO(MODEL)
     for f in source_rgba, source_greyscale, source_non_utf, source_spaces:
-        for source in Image.open(f), cv2.imread(str(f)), f:
+        for source in Image.open(f), (str(f)), f:
             results = model(source, save=True, verbose=True, imgsz=32)
             assert len(results) == 1  # verify that an image was run
         f.unlink()  # cleanup
@@ -489,7 +489,7 @@ def test_hub():
 @pytest.fixture
 def image():
     """Load and return an image from a predefined source using OpenCV."""
-    return cv2.imread(str(SOURCE))
+    return cv2.imread(str(SOURCE), cv2.IMREAD_UNCHANGED)
 
 
 @pytest.mark.parametrize(

@@ -46,7 +46,7 @@ def main(onnx_model, input_image):
     model: cv2.dnn.Net = cv2.dnn.readNetFromONNX(onnx_model)
 
     # Read the input image
-    original_image: np.ndarray = cv2.imread(input_image)
+    original_image: np.ndarray = cv2.imread(input_image, cv2.IMREAD_UNCHANGED)
     [height, width, _] = original_image.shape
 
     # Prepare a square image for inference
@@ -125,6 +125,6 @@ def main(onnx_model, input_image):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="yolov8n.onnx", help="Input your ONNX model.")
-    parser.add_argument("--img", default=str(ASSETS / "bus.jpg"), help="Path to input image.")
+    parser.add_argument("--img", default=str(ASSETS / "bus.png"), help="Path to input image.")
     args = parser.parse_args()
     main(args.model, args.img)

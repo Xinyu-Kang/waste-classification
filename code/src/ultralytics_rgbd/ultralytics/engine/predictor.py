@@ -130,6 +130,7 @@ class BasePredictor:
         im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
         if not_tensor:
             im /= 255  # 0 - 255 to 0.0 - 1.0
+        print("Predictor preprocess im: ", im.shape)
         return im
 
     def inference(self, im, *args, **kwargs):
