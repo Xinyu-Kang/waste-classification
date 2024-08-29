@@ -404,7 +404,6 @@ dependencies:
   - pugixml=1.14=h59595ed_0
   - pulseaudio-client=17.0=hb77b528_0
   - pure_eval=0.2.2=pyhd3eb1b0_0
-  - py-cpuinfo=9.0.0=py39h06a4308_0
   - py-opencv=4.10.0=qt6_py39h1b361a7_600
   - pyarrow=13.0.0=py39h38d04b8_42_cpu
   - pyasn1=0.4.8=pyhd3eb1b0_0
@@ -500,7 +499,6 @@ dependencies:
   - tzdata=2024a=h04d1e81_0
   - tzlocal=5.2=py39h06a4308_0
   - ucx=1.16.0=h1e563ba_5
-  - ultralytics=8.2.81=pyh1669911_0
   - unicodedata2=15.1.0=py39h5eee18b_0
   - urllib3=2.2.2=py39h06a4308_0
   - utf8proc=2.6.1=h5eee18b_1
@@ -550,6 +548,7 @@ dependencies:
       - filetype==1.2.0
       - fsspec==2024.6.1
       - ftfy==6.2.3
+      - git-filter-repo==2.45.0
       - ncnn==1.0.20240820
       - nvidia-cuda-runtime-cu12==12.6.37
       - nvidia-pyindex==1.0.9
