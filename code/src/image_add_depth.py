@@ -7,18 +7,18 @@ from depth import DepthModel
 
 if __name__ == "__main__":
 
-    path = '../../card_data'
+    path = '../../only180_data'
 
     depth_model = DepthModel("vits")
 
-    for image_path in glob.glob(f'{path}/train/rgb_images/*.jpg'): 
+    for image_path in glob.glob(f'{path}/test/rgb_images/*.png'): 
         print("\n===================================================")
         
         image_name = image_path.split('/')[-1][:-4]
         print("Image name: ", image_name)
 
-        rgb_image = cv2.imread(f'{path}/train/rgb_images/{image_name}.jpg')
-        print(f'{path}/train/rgb_images/{image_name}.jpg')
+        rgb_image = cv2.imread(f'{path}/test/rgb_images/{image_name}.png')
+        print(f'{path}/test/rgb_images/{image_name}.png')
         print(rgb_image.shape)
 
         depth_map = depth_model.predict(rgb_image)
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         rgbd_image = np.concatenate((rgb_image, depth_map_expanded), axis=2)
         print(rgbd_image.shape)
 
-        if not cv2.imwrite(f'{path}/train/images/{image_name}.png', rgbd_image):
+        if not cv2.imwrite(f'{path}/test/images/{image_name}.png', rgbd_image):
             raise Exception("Could not write image")
 
         

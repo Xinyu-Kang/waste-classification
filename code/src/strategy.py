@@ -51,6 +51,10 @@ class SelectionStrategy:
                 print("Best: ", best_candidate['id'])
                 break
         
+        if best_candidate is None:
+            print("no valid candidates")
+            return None, None, None, None
+        
         self.candidates[best_candidate['id']]['is-best'] = True
 
         # for c in self.candidates:
@@ -64,21 +68,23 @@ class SelectionStrategy:
         return grasp_point, best_candidate['label'], best_candidate['points'], self.candidates 
 
     def calculate_depth_score(self):
-        print("\n===== Calculate depth score =====\n")
+        print("\nCalculating depth score...\n")
         masks = self.segmentation_results[0].masks
         class_ids = self.segmentation_results[0].boxes.cls
 
         if masks is not None:
             for i, mask in enumerate(masks.xy):
-                print("\nObject ", i)
+                # print("\nObject ", i)
                 label = self.label_names[int(class_ids[i])]
                 if label in self.filter_labels:
                     continue
-                print("label: ", label)
+                # print("label: ", label)
                 points = np.array(mask, dtype=np.int32)
-                print("points: ", len(points))
+                print("points: ", points.shape)
+                if points.shape[0] == 0:
+                    continue
                 score = calculate_score(self.depth_map, points)
-                print("score: ", score)
+                # print("score: ", score)
                 candidate_info = {
                     "id": i,
                     "label": label,
@@ -91,7 +97,7 @@ class SelectionStrategy:
                 self.candidates.append(candidate_info)
 
     def calculate_area(self):
-
+        print("\nCalculating area...\n")
         if self.candidates is None:
             raise ValueError("No candidates found. Please run the selection process first.")
 
@@ -106,6 +112,7 @@ class SelectionStrategy:
             candidate["is-selected"] = candidate["is-selected"] and (area > self.area_threshold)
 
     def calculate_grasp_point(self, points):
+        print("\nCalculating grasp point...\n")
         boundary_points = np.array(points, dtype=np.int32)
         mask = np.zeros(self.depth_map.shape[:2], dtype=np.uint8)
         cv2.fillPoly(mask, [boundary_points], color=255)
@@ -114,6 +121,7 @@ class SelectionStrategy:
         return max_loc
     
     def is_within_x_range(self, x):
+        print("\nCalculating x range...\n")
         image_width = self.image.shape[1]
         left_limit = int(image_width * self.x_range[0])
         right_limit = int(image_width * (1 - self.x_range[1]))
@@ -121,32 +129,38 @@ class SelectionStrategy:
 
 
 def calculate_score(depth_map, boundary_points):
+    # print("   calculate_score()")
     inside_dilation, outside_dilation = dilate_boundary(depth_map, boundary_points)
+
     num_points = len(boundary_points)
     num_greater = sum(
         compare_inside_outside(depth_map, point, inside_dilation, outside_dilation)
         for point in boundary_points
     )
+    print(f"   {num_points}/{num_greater}\n")
     return num_greater / num_points
 
 def dilate_boundary(depth_map, boundary_points):
+    # print("    dilate_boundary()")
     boundary_points = boundary_points.reshape((-1, 1, 2))
     mask = np.zeros(depth_map.shape[:2], dtype=np.uint8)
     cv2.polylines(mask, [boundary_points], isClosed=True, color=1, thickness=1)
-    
-    inside_mask = np.zeros_like(mask)
+    # print("     calculated mask")
+    inside_mask = np.zeros_like(mask, dtype=np.uint8)
+    # print("     inside_mask:", inside_mask.shape)
+    # print("     boundary_points: ", boundary_points.shape)
     cv2.fillPoly(inside_mask, [boundary_points], color=1)
-
+    # print("     calculated inside_mask")
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10))
     dilated_mask = cv2.dilate(mask, kernel, iterations=1)
-
+    # print("     calculated outside_mask")
     outside_dilation = cv2.subtract(dilated_mask, inside_mask)
     inside_dilation = cv2.subtract(dilated_mask, outside_dilation)
 
     return inside_dilation, outside_dilation
 
 def compare_inside_outside(depth_map, point, inside_dilation, outside_dilation):
-    # print(f"Processing point: {point}")
+    # print(f"    compare_inside_outside()")
     box_mask = create_box(depth_map, point, (20, 20))
     box_inside_mask = cv2.bitwise_and(inside_dilation, box_mask)
     box_outside_mask = cv2.bitwise_and(outside_dilation, box_mask)
@@ -155,7 +169,7 @@ def compare_inside_outside(depth_map, point, inside_dilation, outside_dilation):
     outside_values = depth_map[box_outside_mask == 1]
     inside_avg = np.mean(inside_values)
     outside_avg = np.mean(outside_values)
-
+    # print("    ", inside_avg >= outside_avg)
     return int(inside_avg >= outside_avg)
 
 def create_box(image, center_point, box_size):

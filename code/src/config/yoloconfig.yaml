@@ -1,8 +1,11 @@
 model:
-  selected: best-cards  # 在这里选择要使用的模型
+  selected: best-only180  # 在这里选择要使用的模型
   available:
     - best-rgbd  # 垃圾 RGBD（4-channel最优模型）
+    - best-rgbd-super
     - best # 垃圾 RGB（3-channel最优模型）
     - best-updated # best 加上一个 input channel (用作RGBD训练初始值)
     - best-cookies # 饼干
     - best-cards # 扑克牌
+    - best-only90
+    - best-only180

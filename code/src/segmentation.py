@@ -1,5 +1,3 @@
-import cv2
-import numpy as np
 import torch
 from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 import os
@@ -54,6 +52,6 @@ class SegmentationModel:
         # 如果是 YOLO 模型，输入必须是一个格式化的图像
         # results = self.model(image,conf=0.1, imgsz=(height, width), agnostic_nms=True)  # YOLO 模型可以直接接受 NumPy 数组
         
-        results = self.model(image,conf=0.1, imgsz=640, agnostic_nms=True)
+        results = self.model(image,conf=0.2, imgsz=640, agnostic_nms=True)
 
         return results

@@ -50,16 +50,17 @@ def test_on_one(image_path, save_dir):
     print("grab point: ", image_grab_point)
     save_monitoring_image(image, all_candidates, image_grab_point, image_name, save_dir)
 
-def test_on_dir(dir_path, img_suffix='.jpg'):
-    save_dir = f'{dir_path}/outputs'
-    for image_path in glob.glob(f'{dir_path}/rgb_images/*{img_suffix}'): 
+def test_on_dir(image_dir, save_dir, img_suffix='.jpg'):
+    for image_path in glob.glob(f'{image_dir}/*{img_suffix}'): 
+        print("\n###################### New Image ######################\n")
+        print("Image path: ", image_path)
         test_on_one(image_path, save_dir)
 
 if __name__ == '__main__':
 
-    test_on_one('../../small_test_data/2.jpg', '../../monitoring')
-    # test_on_dir('../../card_data/test')
-    # test_on_dir('../../card_data/valid')
+    # test_on_one('../../small_test_data/2.jpg', '../../monitoring')
+    test_on_dir('../../compare_data', '../../compare_output_only180', '.png')
+
 
     ######################################################################
     # # 直接读取配置文件

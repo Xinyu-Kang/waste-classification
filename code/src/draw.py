@@ -10,6 +10,7 @@ def save_monitoring_image(image, candidates, grab_point, filename, monitoring_di
     :param grab_point: 策略选出的抓取点
     :param filename: 保存图像的文件名
     """
+    print("Saving result image...")
     try:
         # 在图像上绘制Bounding Box和抓取点
         image_with_bboxes = draw_bboxes(image, candidates, grab_point)
