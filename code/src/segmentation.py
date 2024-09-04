@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="xformers")
 import torch
 from ultralytics_rgbd.ultralytics.models.yolo import YOLO
 import os
