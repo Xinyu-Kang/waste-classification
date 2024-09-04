@@ -1,5 +1,5 @@
 model:
-  selected: best-only180  # 在这里选择要使用的模型
+  selected: best-rgbd  # 在这里选择要使用的模型
   available:
     - best-rgbd  # 垃圾 RGBD（4-channel最优模型）
     - best-rgbd-super

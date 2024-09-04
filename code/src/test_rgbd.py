@@ -23,12 +23,12 @@ depth_model_name = config_depth['model']['selected']
 depth_model = DepthModel(depth_model_name)
 
 
-def test_on_one(image_path, save_dir):
+def test_on_one(image_path, save_dir, save_name=''):
 
     image_name = image_path.split('/')[-1]
-
+    if save_name == '':
+        save_name = image_name
     print("\n读取图片...")
-    # image = cv2.imread("../../small_test_data/photo_2.jpg")
     image = cv2.imread(image_path)
 
     print("\n深度预测...")
@@ -48,7 +48,7 @@ def test_on_one(image_path, save_dir):
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
     print("grab point: ", image_grab_point)
-    save_monitoring_image(image, all_candidates, image_grab_point, image_name, save_dir)
+    save_monitoring_image(image, all_candidates, image_grab_point, save_name, save_dir)
 
 def test_on_dir(image_dir, save_dir, img_suffix='.jpg'):
     for image_path in glob.glob(f'{image_dir}/*{img_suffix}'): 
@@ -58,44 +58,5 @@ def test_on_dir(image_dir, save_dir, img_suffix='.jpg'):
 
 if __name__ == '__main__':
 
-    # test_on_one('../../small_test_data/2.jpg', '../../monitoring')
-    test_on_dir('../../compare_data', '../../compare_output_only180', '.png')
-
-
-    ######################################################################
-    # # 直接读取配置文件
-    # with open('./config/yoloconfig.yaml', 'r') as file:
-    #     config_seg = yaml.safe_load(file)
-    # with open('./config/depthconfig.yaml', 'r') as file:
-    #     config_depth = yaml.safe_load(file)
-    # with open('./config/strategy.yaml', 'r') as file:
-    #     strategy_config = yaml.safe_load(file)
-
-    # # 根据配置文件选择模型
-    # seg_model_name = config_seg['model']['selected']
-    # segmentation_model = SegmentationModel(seg_model_name)
-    # depth_model_name = config_depth['model']['selected']
-    # depth_model = DepthModel(depth_model_name)
-
-    # print("\n读取图片...")
-    # # image = cv2.imread("../../small_test_data/photo_2.jpg")
-    # image = cv2.imread("../../small_test_data/photo_1.jpg")
-
-    # print("\n深度预测...")
-    # depth_map = depth_model.predict(image)
-
-    # print("\n生成RGBD图片")
-    # depth_array = np.asarray(depth_map)
-    # depth_map_expanded = np.expand_dims(depth_map, axis=2)
-    # rgbd_image = np.concatenate((image, depth_map_expanded), axis=2)
-
-    # print("\n语义分割...")
-    # segmentation_results = segmentation_model.predict(rgbd_image)
-    # label_names = segmentation_model.get_label_names()
-    # print(segmentation_results)
-
-    # print("\n选择物体...")
-    # strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
-    # image_grab_point, label, points, all_candidates = strategy.select()
-    # print("grab point: ", image_grab_point)
-    # save_monitoring_image(image, all_candidates, image_grab_point, "photo_1_rgbd.jpg", "../../monitoring")
+    test_on_one('../../small_test_data/photo_2.jpg', '../../monitoring', save_name='photo_2_rgbd.jpg')
+    # test_on_dir('../../compare_data', '../../compare_output_only180', '.png')
