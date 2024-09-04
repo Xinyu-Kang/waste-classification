@@ -450,7 +450,7 @@ class AutoBackend(nn.Module):
             im = im.half()  # to FP16
         if self.nhwc:
             im = im.permute(0, 2, 3, 1)  # torch BCHW to numpy BHWC shape(1,320,192,3)
-        print("autobackend.py im: ", im.shape)
+        # print("autobackend.py im: ", im.shape)
         # PyTorch
         if self.pt or self.nn_module:
             y = self.model(im, augment=augment, visualize=visualize, embed=embed)
@@ -636,8 +636,8 @@ class AutoBackend(nn.Module):
         if any(warmup_types) and (self.device.type != "cpu" or self.triton):
             im = torch.empty(*imgsz, dtype=torch.half if self.fp16 else torch.float, device=self.device)  # input
             for _ in range(2 if self.jit else 1):
-                print("autobackend.py warmup imgsz: ", imgsz)
-                print("autobackend.py warmup im: ", im.shape)
+                # print("autobackend.py warmup imgsz: ", imgsz)
+                # print("autobackend.py warmup im: ", im.shape)
                 self.forward(im)  # warmup
 
     @staticmethod

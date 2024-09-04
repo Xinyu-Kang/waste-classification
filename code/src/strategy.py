@@ -26,7 +26,7 @@ class SelectionStrategy:
         self.x_range = config.get('x_range', [0, 0])  # 默认允许整个图像范围内的x坐标
 
     def select(self):
-        print("\n================= Select =================\n")
+        # print("\n================= Select =================\n")
         self.calculate_depth_score()
         self.calculate_area()
         best_candidate = None
@@ -48,7 +48,7 @@ class SelectionStrategy:
             grasp_point = self.calculate_grasp_point(candidate['points'])
             if self.is_within_x_range(grasp_point[0]):
                 best_candidate = candidate
-                print("Best: ", best_candidate['id'])
+                # print("Best: ", best_candidate['id'])
                 break
         
         if best_candidate is None:
@@ -68,7 +68,7 @@ class SelectionStrategy:
         return grasp_point, best_candidate['label'], best_candidate['points'], self.candidates 
 
     def calculate_depth_score(self):
-        print("\nCalculating depth score...\n")
+        # print("\nCalculating depth score...\n")
         masks = self.segmentation_results[0].masks
         class_ids = self.segmentation_results[0].boxes.cls
 
@@ -80,7 +80,7 @@ class SelectionStrategy:
                     continue
                 # print("label: ", label)
                 points = np.array(mask, dtype=np.int32)
-                print("points: ", points.shape)
+                # print("points: ", points.shape)
                 if points.shape[0] == 0:
                     continue
                 score = calculate_score(self.depth_map, points)
@@ -97,7 +97,7 @@ class SelectionStrategy:
                 self.candidates.append(candidate_info)
 
     def calculate_area(self):
-        print("\nCalculating area...\n")
+        # print("\nCalculating area...\n")
         if self.candidates is None:
             raise ValueError("No candidates found. Please run the selection process first.")
 
@@ -112,7 +112,7 @@ class SelectionStrategy:
             candidate["is-selected"] = candidate["is-selected"] and (area > self.area_threshold)
 
     def calculate_grasp_point(self, points):
-        print("\nCalculating grasp point...\n")
+        # print("\nCalculating grasp point...\n")
         boundary_points = np.array(points, dtype=np.int32)
         mask = np.zeros(self.depth_map.shape[:2], dtype=np.uint8)
         cv2.fillPoly(mask, [boundary_points], color=255)
@@ -121,7 +121,7 @@ class SelectionStrategy:
         return max_loc
     
     def is_within_x_range(self, x):
-        print("\nCalculating x range...\n")
+        # print("\nCalculating x range...\n")
         image_width = self.image.shape[1]
         left_limit = int(image_width * self.x_range[0])
         right_limit = int(image_width * (1 - self.x_range[1]))
@@ -137,7 +137,7 @@ def calculate_score(depth_map, boundary_points):
         compare_inside_outside(depth_map, point, inside_dilation, outside_dilation)
         for point in boundary_points
     )
-    print(f"   {num_points}/{num_greater}\n")
+    # print(f"   {num_points}/{num_greater}\n")
     return num_greater / num_points
 
 def dilate_boundary(depth_map, boundary_points):

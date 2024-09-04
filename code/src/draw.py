@@ -10,7 +10,7 @@ def save_monitoring_image(image, candidates, grab_point, filename, monitoring_di
     :param grab_point: 策略选出的抓取点
     :param filename: 保存图像的文件名
     """
-    print("Saving result image...")
+
     try:
         # 在图像上绘制Bounding Box和抓取点
         image_with_bboxes = draw_bboxes(image, candidates, grab_point)
@@ -19,9 +19,9 @@ def save_monitoring_image(image, candidates, grab_point, filename, monitoring_di
         monitoring_filename = os.path.join(monitoring_dir, filename)
         cv2.imwrite(monitoring_filename, image_with_bboxes)
         
-        print(f"Image saved to {monitoring_filename}")
+        print(f"图片已储存至 {monitoring_filename}")
     except Exception as e:
-        print(f"Failed to save monitoring image: {e}")
+        print(f"储存图片失败: {e}")
 
 def draw_bboxes(image, candidates, grab_point):
     """

@@ -35,7 +35,6 @@ def test_on_one(image_path, save_dir, save_name=''):
     depth_map = depth_model.predict(image)
 
     print("\n生成RGBD图片")
-    depth_array = np.asarray(depth_map)
     depth_map_expanded = np.expand_dims(depth_map, axis=2)
     rgbd_image = np.concatenate((image, depth_map_expanded), axis=2)
 
@@ -48,6 +47,8 @@ def test_on_one(image_path, save_dir, save_name=''):
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
     print("grab point: ", image_grab_point)
+
+    print("\n保存监控图像...")
     save_monitoring_image(image, all_candidates, image_grab_point, save_name, save_dir)
 
 def test_on_dir(image_dir, save_dir, img_suffix='.jpg'):

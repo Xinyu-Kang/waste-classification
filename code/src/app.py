@@ -104,19 +104,15 @@ def process_image():
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
 
-    if all_candidates != []:
-        # 使用线程池来异步保存监控图像，直接传递抓取点
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-                executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring')
+    # 如果抓取点、标签或points为空，返回204 No Content
+    if image_grab_point is None or label is None or points is None or all_candidates is None:
+        return make_response('', 204)
+
+    # 使用线程池来异步保存监控图像，直接传递抓取点
+    print("\n保存监控图像...")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring')
     
-    # 如果抓取点、标签或points为空，返回204 No Content
-    if image_grab_point is None or label is None or points is None:
-        return make_response('', 204)
-
-    # 如果抓取点、标签或points为空，返回204 No Content
-    if image_grab_point is None or label is None or points is None:
-        return make_response('', 204)
-
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})
 
 
