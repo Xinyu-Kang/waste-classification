@@ -1,3 +1,5 @@
+# 用于将checkpoint第一层权重加入一个输入通道
+
 import yaml
 import torch
 

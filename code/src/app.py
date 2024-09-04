@@ -17,17 +17,14 @@ from depth import DepthModel
 from strategy import SelectionStrategy
 
 
-
 app = Flask(__name__) 
 CORS(app)
 https_bp = Blueprint('https', __name__)
 http_bp = Blueprint('http', __name__)
 
-
 # 队列用来存放从摄像头捕获的图片的二进制数据
 image_queue = queue.Queue()
 
-# ftp配置
 # FTP配置
 ftp_server = "183.222.62.175"
 ftp_username = "hhl"
@@ -40,7 +37,6 @@ IMAGE_FOLDER = './monitoring'
 # 确保目录存在
 if not os.path.exists(IMAGE_FOLDER):
     os.makedirs(IMAGE_FOLDER)
-
 
 # 直接读取配置文件
 with open('./config/yoloconfig.yaml', 'r') as file:
@@ -78,36 +74,23 @@ def process_image():
     :return:物体抓取点在图片上的坐标及物体的类别
     """
     global strategy_config  # 使用全局配置
+
+    print("\n读取图片...")
     image, filename = get_image(request.files['image'])
-
-    
-    
-    # 确保图像是三通道（RGB）
-    if image.shape[-1] == 4:  # 如果图像是四通道（RGBA）
-        image = image[:, :, :3]  # 去掉Alpha通道
-
-    
-
-        # 将上下30像素设置为黑色
-    height, width, _ = image.shape
-
-    blackout_top = strategy_config.get('blackout_pixels', {}).get('top', 30)    # 如果未设置，默认为30像素
-    blackout_bottom = strategy_config.get('blackout_pixels', {}).get('bottom', 30)  # 如果未设置，默认为20像素
-
-    # 上部涂黑
-    image[:blackout_top, :] = [0, 0, 0]  # 纯黑色 [B, G, R]
-    
-    # 下部涂黑
-    image[-blackout_bottom:, :] = [0, 0, 0]  # 纯黑色
-
 
     # 异步上传图像到FTP服务器
     # asyncio.create_task(upload_to_ftp(filename, filename))
 
-    segmentation_results = segmentation_model.predict(image)
+    print("\n深度预测...")
+    depth_map = depth_model.predict(image)
+
+    print("\n生成RGBD图片")
+    depth_map_expanded = np.expand_dims(depth_map, axis=2)
+    rgbd_image = np.concatenate((image, depth_map_expanded), axis=2)
+
+    print("\n语义分割...")
+    segmentation_results = segmentation_model.predict(rgbd_image)
     label_names = segmentation_model.get_label_names()
-
-
 
     # 如果分割模型没有返回结果，返回204 No Content
     if segmentation_results is None or not segmentation_results:
@@ -115,14 +98,19 @@ def process_image():
 
     depth_map = depth_model.predict(image)
 
-
     # 如果深度模型没有返回结果，返回204 No Content
     if depth_map is None or not depth_map.any():
         return make_response('', 204)
 
+    print("\n选择物体...")
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
+    image_grab_point, label, points, all_candidates = strategy.select()
 
-    image_grab_point, label, points = strategy.select()
+    if all_candidates != []:
+        # 使用线程池来异步保存监控图像，直接传递抓取点
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+                executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring')
+    
 
     # 如果抓取点、标签或points为空，返回204 No Content
     if image_grab_point is None or label is None or points is None:
@@ -135,9 +123,6 @@ def process_image():
     if image_grab_point is None or label is None or points is None:
         return make_response('', 204)
 
-    # 使用线程池来异步保存监控图像，直接传递抓取点
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(save_monitoring_image, image, segmentation_results, image_grab_point, filename, './monitoring')
     
 
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})

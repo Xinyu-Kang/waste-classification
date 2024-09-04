@@ -42,7 +42,7 @@ def test_on_one(image_path, save_dir, save_name=''):
     print("\n语义分割...")
     segmentation_results = segmentation_model.predict(rgbd_image)
     label_names = segmentation_model.get_label_names()
-    print(segmentation_results)
+    # print(segmentation_results)
 
     print("\n选择物体...")
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)

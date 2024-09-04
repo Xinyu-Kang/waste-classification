@@ -1,3 +1,5 @@
+# 用于预处理数据集，将RGB图片转为RGBD图片
+
 import cv2
 import numpy as np
 import glob
