@@ -84,7 +84,11 @@ def process_image():
     print("\n深度预测...")
     depth_map = depth_model.predict(image)
 
-    print("\n生成RGBD图片")
+    # 如果深度模型没有返回结果，返回204 No Content
+    if depth_map is None or not depth_map.any():
+        return make_response('', 204)
+
+    print("\n生成RGBD图片...")
     depth_map_expanded = np.expand_dims(depth_map, axis=2)
     rgbd_image = np.concatenate((image, depth_map_expanded), axis=2)
 
@@ -96,12 +100,6 @@ def process_image():
     if segmentation_results is None or not segmentation_results:
         return make_response('', 204)
 
-    depth_map = depth_model.predict(image)
-
-    # 如果深度模型没有返回结果，返回204 No Content
-    if depth_map is None or not depth_map.any():
-        return make_response('', 204)
-
     print("\n选择物体...")
     strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
@@ -111,19 +109,13 @@ def process_image():
         with concurrent.futures.ThreadPoolExecutor() as executor:
                 executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring')
     
-
     # 如果抓取点、标签或points为空，返回204 No Content
     if image_grab_point is None or label is None or points is None:
         return make_response('', 204)
 
-    # 将抓取的候选点与其他候选点传入绘图函数
-    grasp_candidates = [points]  # 这里的points是通过select方法返回的抓取点
-
     # 如果抓取点、标签或points为空，返回204 No Content
     if image_grab_point is None or label is None or points is None:
         return make_response('', 204)
-
-    
 
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})
 
@@ -134,6 +126,7 @@ def index():
     images = sorted(os.listdir(IMAGE_FOLDER), key=lambda x: os.path.getmtime(os.path.join(IMAGE_FOLDER, x)), reverse=True)
     images = images[:num_images]
     return render_template('index.html', images=images)
+
 
 @app.route('/image/<filename>')
 def image(filename):
@@ -148,12 +141,10 @@ def get_image(data):
     image = cv2.imdecode(image_np, cv2.IMREAD_UNCHANGED)
     
     # 获取当前时间作为文件名
-    filename = datetime.now().strftime("%Y%m%d_%H%M%S") + ".png"
-    
+    filename = datetime.now().strftime("%Y%m%d_%H%M%S") + ".png" 
     
     # 返回解码后的图像和文件名
     return image, filename
-
 
 
 if __name__ == '__main__':
