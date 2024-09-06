@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监控图片</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .gallery img {
+            width: 100%;
+            height: auto;
+            object-fit: contain; /* 确保图片不被裁剪或拉伸 */
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>监控图片</h1>
+    <form method="get" action="{{ url_for('index') }}">  <!-- 指向 /monitor -->
+        <label for="num_images">显示最近的图片数量:</label>
+        <input type="number" id="num_images" name="num_images" value="10" min="1">
+        <button type="submit">刷新</button>
+    </form>
+    
+    <div class="gallery">
+        {% for image in images %}
+        <a href="{{ url_for('image', filename=image) }}" target="_blank">
+            <img src="{{ url_for('image', filename=image) }}" alt="监控图片">
+        </a>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-def save_monitoring_image(image, candidates, grab_point, filename, monitoring_dir):
+def save_monitoring_image(image, candidates, grab_point, filename, monitoring_dir, crop_top):
     """
     异步保存监控图片的函数
     :param image: 原始图像
@@ -13,7 +13,7 @@ def save_monitoring_image(image, candidates, grab_point, filename, monitoring_di
 
     try:
         # 在图像上绘制Bounding Box和抓取点
-        image_with_bboxes = draw_bboxes(image, candidates, grab_point)
+        image_with_bboxes = draw_bboxes(image, candidates, grab_point, crop_top)
         
         # 保存监控图像到本地文件夹
         monitoring_filename = os.path.join(monitoring_dir, filename)
@@ -23,7 +23,7 @@ def save_monitoring_image(image, candidates, grab_point, filename, monitoring_di
     except Exception as e:
         print(f"储存图片失败: {e}")
 
-def draw_bboxes(image, candidates, grab_point):
+def draw_bboxes(image, candidates, grab_point, crop_top):
     """
     在图像上绘制经过筛选的结果，并突出显示策略选出的抓取点。
     :param image: 原始图像
@@ -40,6 +40,9 @@ def draw_bboxes(image, candidates, grab_point):
     for c in candidates:
         label = c['label']
         points = c['points'].reshape((-1, 1, 2))  # 使用 xy 数据进行绘制
+
+        points[:, :, 1] += crop_top
+        
         depth_score = c['depth-score']
         is_selected = c['is-selected']
         is_max_depth = c['is-max-depth']

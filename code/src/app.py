@@ -15,6 +15,7 @@ from draw import save_monitoring_image
 from segmentation import SegmentationModel 
 from depth import DepthModel 
 from strategy import SelectionStrategy
+import torch
 
 
 app = Flask(__name__) 
@@ -75,14 +76,32 @@ def process_image():
     """
     global strategy_config  # 使用全局配置
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(f"Loading model on {device}...")
+
     print("\n读取图片...")
     image, filename = get_image(request.files['image'])
+
+    # 确保图像是三通道（RGB）
+    if image.shape[-1] == 4:  # 如果图像是四通道（RGBA）
+        image = image[:, :, :3]  # 去掉Alpha通道
+        print("channel alpha was removed")
+
+        # 将上下30像素设置为黑色
+    height, width, _ = image.shape
+    
+    # 获取裁剪的像素值
+    crop_top = strategy_config.get('blackout_pixels', {}).get('top', 30)    # 如果未设置，默认为30像素
+    crop_bottom = strategy_config.get('blackout_pixels', {}).get('bottom', 30)  # 如果未设置，默认为20像素
+    
+    # 裁剪图像
+    cropped_image = image[crop_top:height-crop_bottom, :, :]
 
     # 异步上传图像到FTP服务器
     # asyncio.create_task(upload_to_ftp(filename, filename))
 
     print("\n深度预测...")
-    depth_map = depth_model.predict(image)
+    depth_map = depth_model.predict(cropped_image)
 
     # 如果深度模型没有返回结果，返回204 No Content
     if depth_map is None or not depth_map.any():
@@ -90,28 +109,35 @@ def process_image():
 
     print("\n生成RGBD图片...")
     depth_map_expanded = np.expand_dims(depth_map, axis=2)
-    rgbd_image = np.concatenate((image, depth_map_expanded), axis=2)
+    rgbd_image = np.concatenate((cropped_image, depth_map_expanded), axis=2)
 
     print("\n语义分割...")
     segmentation_results = segmentation_model.predict(rgbd_image)
     label_names = segmentation_model.get_label_names()
 
     # 如果分割模型没有返回结果，返回204 No Content
-    if segmentation_results is None or not segmentation_results:
+    if segmentation_results is None or len(segmentation_results) == 0:
+        print("Segmentation results are empty or None.")
         return make_response('', 204)
 
     print("\n选择物体...")
-    strategy = SelectionStrategy(image, segmentation_results, depth_map, label_names)
+    strategy = SelectionStrategy(cropped_image, segmentation_results, depth_map, label_names)
     image_grab_point, label, points, all_candidates = strategy.select()
+
+    
 
     # 如果抓取点、标签或points为空，返回204 No Content
     if image_grab_point is None or label is None or points is None or all_candidates is None:
         return make_response('', 204)
 
-    # 使用线程池来异步保存监控图像，直接传递抓取点
+    image_grab_point = (image_grab_point[0], image_grab_point[1] + crop_top)
+
+    # 使用线程池来异步保存监控图像，直接传递抓取点s
     print("\n保存监控图像...")
     with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring')
+            executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring', crop_top)
+
+    points = points.tolist()
     
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})
 

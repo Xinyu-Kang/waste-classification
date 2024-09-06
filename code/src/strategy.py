@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import yaml
+import random
 
 class SelectionStrategy:
 
@@ -26,46 +27,32 @@ class SelectionStrategy:
         self.x_range = config.get('x_range', [0, 0])  # 默认允许整个图像范围内的x坐标
 
     def select(self):
-        # print("\n================= Select =================\n")
+        # 计算深度得分和面积
         self.calculate_depth_score()
         self.calculate_area()
-        best_candidate = None
 
-        if self.candidates == []:
-            print("no valid candidates")
+        # 如果没有候选物体，返回None
+        if not self.candidates:
+            print("No valid candidates")
             return None, None, None, None
 
-        # 找出深度分数最大的候选区域
-        max_depth_score = max(candidate['depth-score'] for candidate in self.candidates)
-        max_depth_candidates = [
-            candidate for candidate in self.candidates if candidate['depth-score'] == max_depth_score and candidate['is-selected']
-        ]
-        for candidate in max_depth_candidates:
-            candidate['is-max-depth'] = True
+        # 从所有满足条件的物体中，随机选择一个
+        valid_candidates = [candidate for candidate in self.candidates if candidate['is-selected']]
 
-        # 如果有多个深度分数相同的候选区域，则选择x坐标在指定范围内的那个
-        for candidate in max_depth_candidates:
-            grasp_point = self.calculate_grasp_point(candidate['points'])
-            if self.is_within_x_range(grasp_point[0]):
-                best_candidate = candidate
-                # print("Best: ", best_candidate['id'])
-                break
-        
-        if best_candidate is None:
-            print("no valid candidates")
+        if not valid_candidates:
+            print("No valid candidates after filtering")
             return None, None, None, None
+
+        # 随机选择一个候选物体
+        best_candidate = random.choice(valid_candidates)
+        best_candidate['is-best'] = True
+
+        # 计算抓取点
+        grasp_point = self.calculate_grasp_point(best_candidate['points'])
         
-        self.candidates[best_candidate['id']]['is-best'] = True
-
-        # for c in self.candidates:
-        #     print('')
-        #     print(c['id'])
-        #     print(c['is-selected'])
-        #     print(c['is-best'])
-        #     print(c['depth-score'])
-
         # 返回选定区域的抓取点、标签及所有points
-        return grasp_point, best_candidate['label'], best_candidate['points'], self.candidates 
+        return grasp_point, best_candidate['label'], best_candidate['points'], self.candidates
+
 
     def calculate_depth_score(self):
         # print("\nCalculating depth score...\n")
