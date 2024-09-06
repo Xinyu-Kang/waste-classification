@@ -47,6 +47,7 @@ def draw_bboxes(image, candidates, grab_point, crop_top):
         is_selected = c['is-selected']
         is_max_depth = c['is-max-depth']
         is_best = c['is-best']
+        if is_best("best_candidate drawn: ", c['id'])
 
         color = (0, 0, 255) if is_best else (0, 255, 0) if is_selected else (255, 0, 0)
         # color = (255, 0, 0) if is_best else (0, 255, 0)

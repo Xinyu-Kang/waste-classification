@@ -75,7 +75,7 @@ def process_image():
     :return:物体抓取点在图片上的坐标及物体的类别
     """
     global strategy_config  # 使用全局配置
-
+    print("----------------------------------------------")
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"Loading model on {device}...")
 
@@ -122,9 +122,7 @@ def process_image():
 
     print("\n选择物体...")
     strategy = SelectionStrategy(cropped_image, segmentation_results, depth_map, label_names)
-    image_grab_point, label, points, all_candidates = strategy.select()
-
-    
+    image_grab_point, label, points, all_candidates = strategy.select() 
 
     # 如果抓取点、标签或points为空，返回204 No Content
     if image_grab_point is None or label is None or points is None or all_candidates is None:
@@ -137,6 +135,7 @@ def process_image():
     with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.submit(save_monitoring_image, image, all_candidates, image_grab_point, filename, './monitoring', crop_top)
 
+    print("\n完成\n")
     points = points.tolist()
     
     return jsonify({'point': image_grab_point, 'label': label, 'object_img_pints': points})

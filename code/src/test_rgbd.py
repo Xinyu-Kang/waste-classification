@@ -25,6 +25,8 @@ depth_model = DepthModel(depth_model_name)
 
 def test_on_one(image_path, save_dir, save_name=''):
 
+    print("----------------------------------------------")
+
     image_name = image_path.split('/')[-1]
     if save_name == '':
         save_name = image_name
@@ -50,6 +52,8 @@ def test_on_one(image_path, save_dir, save_name=''):
 
     print("\n保存监控图像...")
     save_monitoring_image(image, all_candidates, image_grab_point, save_name, save_dir)
+
+    print("\n完成\n")
 
 def test_on_dir(image_dir, save_dir, img_suffix='.jpg'):
     for image_path in glob.glob(f'{image_dir}/*{img_suffix}'): 

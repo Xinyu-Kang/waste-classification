@@ -46,6 +46,7 @@ class SelectionStrategy:
         # 随机选择一个候选物体
         best_candidate = random.choice(valid_candidates)
         best_candidate['is-best'] = True
+        print("best_candidate id: ", best_candidate['id'])
 
         # 计算抓取点
         grasp_point = self.calculate_grasp_point(best_candidate['points'])
