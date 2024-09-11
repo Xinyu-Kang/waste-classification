@@ -42,12 +42,13 @@ def draw_bboxes(image, candidates, grab_point, crop_top):
         points = c['points'].reshape((-1, 1, 2))  # 使用 xy 数据进行绘制
 
         points[:, :, 1] += crop_top
-        
+
         depth_score = c['depth-score']
         is_selected = c['is-selected']
         is_max_depth = c['is-max-depth']
         is_best = c['is-best']
-        if is_best("best_candidate drawn: ", c['id'])
+        if is_best:
+            print(f"best_candidate draw: {c['id']}")
 
         color = (0, 0, 255) if is_best else (0, 255, 0) if is_selected else (255, 0, 0)
         # color = (255, 0, 0) if is_best else (0, 255, 0)
