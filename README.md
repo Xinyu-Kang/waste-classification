@@ -1,1 +1,1 @@
-# ZZDance2.0
+# Waste Classification
